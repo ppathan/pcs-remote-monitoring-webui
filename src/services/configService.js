@@ -2,7 +2,7 @@
 
 import Config from 'app.config';
 import { HttpClient } from './httpClient';
-import { toDeviceGroupsModel } from './models';
+import { toDeviceGroupsModel, toSolutionSettingThemeModel } from './models';
 import { stringToBoolean } from 'utilities';
 
 const ENDPOINT = Config.serviceUrls.config;
@@ -14,6 +14,13 @@ export class ConfigService {
   static getDeviceGroups() {
     return HttpClient.get(`${ENDPOINT}devicegroups`)
       .map(toDeviceGroupsModel);
+  }
+
+  /** Returns the azure map key for the account */
+  static getAzureMapKey() {
+    return HttpClient.get(`${ENDPOINT}solution-settings/theme`)
+      .map(toSolutionSettingThemeModel)
+      .map(response => response.azureMapsKey);
   }
 
   static getLogo() {
