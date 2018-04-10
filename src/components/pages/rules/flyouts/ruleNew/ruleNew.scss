@@ -1,9 +1,41 @@
 // Copyright (c) Microsoft. All rights reserved.
 
+@import 'src/styles/themes';
+@import 'src/styles/mixins';
+
 .new-rule-flyout-container {
 
   .rule-property-container {
     border: none;
     margin-top: 20px;
+  }
+
+  .devices-affected{
+    display: flex;
+    flex-flow: row nowrap;
+    position: relative;
+    top: 18.5px;
+    height: 67px;
+  }
+  @include themify($themes) {
+    .devices-affected-dynamic {
+      font-size: 48px;
+      font-weight: bold;
+      color: themed('colorHighest');
+    }
+  }
+
+  .devices-affected-static {
+    position: relative;
+    top: 32px;
+    left: 16px;
+    font-size: 16px;
+  }
+
+  .apply-cancel {
+    position: relative;
+    width: 288px;
+    left: 180px;
+    top: 42px;
   }
 }

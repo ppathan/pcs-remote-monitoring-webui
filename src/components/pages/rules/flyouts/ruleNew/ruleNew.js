@@ -9,42 +9,34 @@ import {
   FormLabel,
   Radio,
   Svg,
-
+  ToggleBtn
 } from 'components/shared';
 import { SeverityRenderer } from 'components/shared/cellRenderers';
-import { svgs, LinkedComponent } from 'utilities';
+import { Validator, svgs, LinkedComponent } from 'utilities';
 import Flyout from 'components/shared/flyout';
 
 import './ruleNew.css';
 
 const Section = Flyout.Section;
 
+const ruleNameValidator = (new Validator()).check(Validator.notEmpty, 'Name is required');
+
 // A counter for creating unique keys per new condition
 let conditionKey = 0;
-
-//Creates a state object for time period
-const newTimePeriod = () => ({
-  hours: '',
-  minutes: '',
-  seconds: ''
-})
 
 // Creates a state object for a condition
 const newCondition = () => ({
   field: '',
   calculation: '',
-  timePeriod: [newTimePeriod()],
+  timePeriod: {
+    hours: '',
+    minutes: '',
+    seconds: ''
+  },
   operator: '',
   value: '',
   key: conditionKey++ // Used by react to track the rendered elements
 });
-
-//Creates a state object for severity level
-const newSeverityLevel = () => ({
-  critical: true,
-  warning: false,
-  info: false
-})
 
 // TODO: Translate all the hard coded strings
 export class RuleNew extends LinkedComponent {
@@ -62,18 +54,15 @@ export class RuleNew extends LinkedComponent {
         warning: false,
         info: false
       },
-      ruleStatus: false,
+      ruleStatus: true,
       devicesAffected: 0
     };
 
     // State links
-    this.ruleName = this.linkTo('name');
-    this.description = this.linkTo('description');
-    this.deviceGroup = this.linkTo('deviceGroup');
-    this.conditions = this.linkTo('conditions');
-    this.severityLevel = this.linkTo('severityLevel');
-    // this.ruleStatus = this.linkTo('ruleStatus');
-    // this.devicesAffected = this.linkTo
+    this.ruleNameLink = this.linkTo('name');
+    this.descriptionLink = this.linkTo('description');
+    this.deviceGroupLink = this.linkTo('deviceGroup');
+    this.conditionsLink = this.linkTo('conditions');
   }
 
   addCondition = () => this.conditions.set([...this.conditions.value, newCondition()]);
@@ -88,9 +77,10 @@ export class RuleNew extends LinkedComponent {
 
   render() {
     const { onClose, t } = this.props;
-
+    const name = this.ruleNameLink.forkTo('name')
+        .withValidator(ruleNameValidator);
     // Create the state link for the dynamic form elements
-    const conditionLinks = this.conditions.getLinkedChildren(conditionLink => {
+    const conditionLinks = this.conditionsLink.getLinkedChildren(conditionLink => {
       const value = conditionLink.forkTo('value');
       return { value };
     });
@@ -106,26 +96,27 @@ export class RuleNew extends LinkedComponent {
             <Section.Container className="rule-property-container">
               <Section.Content>
                 <FormGroup>
-                  <FormLabel>Rule name</FormLabel>
+                  <FormLabel isRequired="true">Rule name</FormLabel>
                   <FormControl
                     type="text"
+                    className="long"
                     placeholder="Rule name"
-                    link={this.ruleName} />
+                    link={name} />
                 </FormGroup>
                 <FormGroup>
                   <FormLabel>Description</FormLabel>
                   <FormControl
                     type="textarea"
                     placeholder="Description"
-                    link={this.description} />
+                    link={this.descriptionLink} />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel>Device Group</FormLabel>
+                  <FormLabel isRequired="true">Device Group</FormLabel>
                   <FormControl
                     type="select"
                     className="long"
                     placeholder="DeviceGroup"
-                    link={this.deviceGroup} />
+                    link={this.deviceGroupLink} />
                 </FormGroup>
               </Section.Content>
             </Section.Container>
@@ -146,7 +137,7 @@ export class RuleNew extends LinkedComponent {
                       <Btn svg={svgs.trash} onClick={this.deleteCondition(idx)}>Delete</Btn>
                     }
                     <FormGroup>
-                      <FormLabel>Field</FormLabel>
+                      <FormLabel isRequired="true">Field</FormLabel>
                       <FormControl
                         type="select"
                         className="long"
@@ -154,7 +145,7 @@ export class RuleNew extends LinkedComponent {
                         link={condition.field} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel>Calculation</FormLabel>
+                      <FormLabel isRequired="true">Calculation</FormLabel>
                       <FormControl
                         type="select"
                         className="long"
@@ -162,7 +153,7 @@ export class RuleNew extends LinkedComponent {
                         link={condition.calculation} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel>Time Period</FormLabel>
+                      <FormLabel isRequired="true">Time Period</FormLabel>
                       <FormControl
                         type="duration"
                         className="long"
@@ -170,7 +161,7 @@ export class RuleNew extends LinkedComponent {
                         link={condition.timePeriod} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel>Operator</FormLabel>
+                      <FormLabel isRequired="true">Operator</FormLabel>
                       <FormControl
                         type="select"
                         className="short"
@@ -178,7 +169,7 @@ export class RuleNew extends LinkedComponent {
                         link={condition.operator} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel>Value</FormLabel>
+                      <FormLabel isRequired="true">Value</FormLabel>
                       <FormControl
                         type="text"
                         placeholder="Enter value"
@@ -211,17 +202,18 @@ export class RuleNew extends LinkedComponent {
               </Section.Content>
               <Section.Header>Rule status</Section.Header>
               <Section.Content>
-                <Btn svg={svgs.disabled} onClick={this.addCondition}>Enabled</Btn>
+                <ToggleBtn value={this.state.ruleStatus}>Enabled</ToggleBtn>
               </Section.Content>
             </Section.Container>
             <Section.Container collapsable={false}>
-              <Section.Header>Severity level</Section.Header>
-              <Section.Content>
+              <Section.Content className="devices-affected">
+                <div className="devices-affected-dynamic">{this.state.devicesAffected}</div>
+                <div className="devices-affected-static">devices affected by this rule</div>
               </Section.Content>
             </Section.Container>
-            <BtnToolbar>
+            <BtnToolbar className="apply-cancel">
               <Btn type="submit">Apply</Btn>
-              <Btn type="submit">Cancel</Btn>
+              <Btn onClick={onClose}>Cancel</Btn>
             </BtnToolbar>
           </form>
         </Flyout.Content>
