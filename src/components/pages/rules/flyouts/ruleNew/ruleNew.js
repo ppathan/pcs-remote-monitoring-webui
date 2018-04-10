@@ -38,7 +38,6 @@ const newCondition = () => ({
   key: conditionKey++ // Used by react to track the rendered elements
 });
 
-// TODO: Translate all the hard coded strings
 export class RuleNew extends LinkedComponent {
 
   constructor(props) {
@@ -78,7 +77,7 @@ export class RuleNew extends LinkedComponent {
   render() {
     const { onClose, t } = this.props;
     const name = this.ruleNameLink.forkTo('name')
-        .withValidator(ruleNameValidator);
+      .withValidator(ruleNameValidator);
     // Create the state link for the dynamic form elements
     const conditionLinks = this.conditionsLink.getLinkedChildren(conditionLink => {
       const fieldLink = conditionLink.forkTo('field');
@@ -100,14 +99,14 @@ export class RuleNew extends LinkedComponent {
                   <FormControl
                     type="text"
                     className="long"
-                    placeholder="Rule name"
+                    placeholder={t(`rulesFlyout.namePlaceholder`)}
                     link={name} />
                 </FormGroup>
                 <FormGroup>
                   <FormLabel>{t(`rulesFlyout.description`)}</FormLabel>
                   <FormControl
                     type="textarea"
-                    placeholder="Description"
+                    placeholder={t(`rulesFlyout.descriptionPlaceholder`)}
                     link={this.descriptionLink} />
                 </FormGroup>
                 <FormGroup>
@@ -115,7 +114,7 @@ export class RuleNew extends LinkedComponent {
                   <FormControl
                     type="select"
                     className="long"
-                    placeholder="DeviceGroup"
+                    placeholder={t(`rulesFlyout.deviceGroupPlaceholder`)}
                     link={this.deviceGroupLink} />
                 </FormGroup>
               </Section.Content>
@@ -124,7 +123,7 @@ export class RuleNew extends LinkedComponent {
             <Section.Container collapsable={false}>
               <Section.Header>{t(`rulesFlyout.conditions`)}</Section.Header>
               <Section.Content>
-                <Btn svg={svgs.plus} onClick={this.addCondition}>{`rulesFlyout.addCondition`}</Btn>
+                <Btn svg={svgs.plus} onClick={this.addCondition}>{t(`rulesFlyout.addCondition`)}</Btn>
               </Section.Content>
             </Section.Container>
             {
@@ -141,7 +140,7 @@ export class RuleNew extends LinkedComponent {
                       <FormControl
                         type="select"
                         className="long"
-                        placeholder="Select field"
+                        placeholder={t(`rulesFlyout.condition.fieldPlaceholder`)}
                         link={condition.field} />
                     </FormGroup>
                     <FormGroup>
@@ -149,7 +148,7 @@ export class RuleNew extends LinkedComponent {
                       <FormControl
                         type="select"
                         className="long"
-                        placeholder="Select"
+                        placeholder={t(`rulesFlyout.condition.calculationPlaceholder`)}
                         link={condition.calculation} />
                     </FormGroup>
                     <FormGroup>
@@ -157,7 +156,6 @@ export class RuleNew extends LinkedComponent {
                       <FormControl
                         type="duration"
                         className="long"
-                        placeholder="Select"
                         link={condition.timePeriod} />
                     </FormGroup>
                     <FormGroup>
@@ -165,14 +163,14 @@ export class RuleNew extends LinkedComponent {
                       <FormControl
                         type="select"
                         className="short"
-                        placeholder="Select operator"
+                        placeholder={t(`rulesFlyout.condition.operatorPlaceholder`)}
                         link={condition.operator} />
                     </FormGroup>
                     <FormGroup>
                       <FormLabel isRequired="true">{t(`rulesFlyout.condition.value`)}</FormLabel>
                       <FormControl
                         type="text"
-                        placeholder="Enter value"
+                        placeholder={t(`rulesFlyout.condition.valuePlaceholder`)}
                         link={condition.value} />
                     </FormGroup>
                   </Section.Content>

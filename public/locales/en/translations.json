@@ -45,17 +45,24 @@
   "rulesFlyout": {
     "newRule": "New rule",
     "ruleName": "Rule name",
+    "namePlaceholder": "Enter rule name",
     "description": "Description",
+    "descriptionPlaceholder": "Enter rule description",
     "deviceGroup": "Device group",
+    "deviceGroupPlaceholder": "Select device group",
     "conditions": "Conditions",
     "addCondition": "Add condition",
     "condition": {
       "condition": "Condition",
       "field": "Field",
+      "fieldPlaceholder": "Select field",
       "calculation": "Calculation",
+      "calculationPlaceholder": "select",
       "timePeriod": "Time Period",
       "operator": "Operator",
-      "value": "Value"
+      "operatorPlaceholder": "> =",
+      "value": "Value",
+      "valuePlaceholder": "Enter value"
     },
     "severityLevel": "Severity level",
     "ruleStatus": "Rule status",
@@ -65,7 +72,9 @@
   },
   "dashboard": {
     "panels": {
-      "alarms": { "header": "System alarms" },
+      "alarms": {
+        "header": "System alarms"
+      },
       "kpis": {
         "header": "System KPIs",
         "topRule": "Top rules triggered",
@@ -88,7 +97,9 @@
         "connected": "Connected",
         "notConnected": "Offline"
       },
-      "telemetry": { "header": "Telemetry" }
+      "telemetry": {
+        "header": "Telemetry"
+      }
     }
   },
   "refreshBar": {
@@ -234,7 +245,7 @@
       "explore": "Explore"
     }
   },
-  "fileInput" : {
+  "fileInput": {
     "upload": "Upload"
   },
   "applicationSettings": {

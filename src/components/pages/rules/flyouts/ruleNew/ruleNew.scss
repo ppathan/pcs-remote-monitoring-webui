@@ -7,19 +7,20 @@
 
   .rule-property-container {
     border: none;
-    margin-top: 20px;
+    @include rem-fallback(margin-top, 20px);
   }
 
   .devices-affected{
     display: flex;
     flex-flow: row nowrap;
     position: relative;
-    top: 18.5px;
-    height: 67px;
+    @include rem-fallback(top, 18.5px);
+    @include rem-fallback(height, 67px);
   }
+
   @include themify($themes) {
     .devices-affected-dynamic {
-      font-size: 48px;
+      @include rem-fallback(font-size, 48px);
       font-weight: bold;
       color: themed('colorHighest');
     }
@@ -27,15 +28,15 @@
 
   .devices-affected-static {
     position: relative;
-    top: 32px;
-    left: 16px;
-    font-size: 16px;
+    @include rem-fallback(top, 32px);
+    @include rem-fallback(left, 16px);
+    @include rem-fallback(font-size, 16px);
   }
 
   .apply-cancel {
     position: relative;
-    width: 288px;
-    left: 180px;
-    top: 42px;
+    @include rem-fallback(width, 288px);
+    @include rem-fallback(left, 180px);
+    @include rem-fallback(top, 42px);
   }
 }
