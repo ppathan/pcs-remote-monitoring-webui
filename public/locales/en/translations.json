@@ -42,6 +42,27 @@
     "loading": "Loading",
     "simulationDescription": "Start or stop simulation of devices. Stopping device simulation will minimize the cost of the solution; no simulated telemetry will be sent to your IoT Hub and alarms will not be generated for simulated devices."
   },
+  "rulesFlyout": {
+    "newRule": "New rule",
+    "ruleName": "Rule name",
+    "description": "Description",
+    "deviceGroup": "Device group",
+    "conditions": "Conditions",
+    "addCondition": "Add condition",
+    "condition": {
+      "condition": "Condition",
+      "field": "Field",
+      "calculation": "Calculation",
+      "timePeriod": "Time Period",
+      "operator": "Operator",
+      "value": "Value"
+    },
+    "severityLevel": "Severity level",
+    "ruleStatus": "Rule status",
+    "devicesAffected": "devices affected by this rule",
+    "apply": "Apply",
+    "cancel": "Cancel"
+  },
   "dashboard": {
     "panels": {
       "alarms": { "header": "System alarms" },

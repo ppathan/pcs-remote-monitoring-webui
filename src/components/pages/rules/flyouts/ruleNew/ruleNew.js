@@ -81,14 +81,14 @@ export class RuleNew extends LinkedComponent {
         .withValidator(ruleNameValidator);
     // Create the state link for the dynamic form elements
     const conditionLinks = this.conditionsLink.getLinkedChildren(conditionLink => {
-      const value = conditionLink.forkTo('value');
-      return { value };
+      const fieldLink = conditionLink.forkTo('field');
+      return { fieldLink };
     });
 
     return (
       <Flyout.Container>
         <Flyout.Header>
-          <Flyout.Title>New Rule</Flyout.Title>
+          <Flyout.Title>{t(`rulesFlyout.newRule`)}</Flyout.Title>
           <Flyout.CloseBtn onClick={onClose} />
         </Flyout.Header>
         <Flyout.Content className="new-rule-flyout-container">
@@ -96,7 +96,7 @@ export class RuleNew extends LinkedComponent {
             <Section.Container className="rule-property-container">
               <Section.Content>
                 <FormGroup>
-                  <FormLabel isRequired="true">Rule name</FormLabel>
+                  <FormLabel isRequired="true">{t(`rulesFlyout.ruleName`)}</FormLabel>
                   <FormControl
                     type="text"
                     className="long"
@@ -104,14 +104,14 @@ export class RuleNew extends LinkedComponent {
                     link={name} />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t(`rulesFlyout.description`)}</FormLabel>
                   <FormControl
                     type="textarea"
                     placeholder="Description"
                     link={this.descriptionLink} />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel isRequired="true">Device Group</FormLabel>
+                  <FormLabel isRequired="true">{t(`rulesFlyout.deviceGroup`)}</FormLabel>
                   <FormControl
                     type="select"
                     className="long"
@@ -122,22 +122,22 @@ export class RuleNew extends LinkedComponent {
             </Section.Container>
 
             <Section.Container collapsable={false}>
-              <Section.Header>Conditions</Section.Header>
+              <Section.Header>{t(`rulesFlyout.conditions`)}</Section.Header>
               <Section.Content>
-                <Btn svg={svgs.plus} onClick={this.addCondition}>Add condition</Btn>
+                <Btn svg={svgs.plus} onClick={this.addCondition}>{`rulesFlyout.addCondition`}</Btn>
               </Section.Content>
             </Section.Container>
             {
               conditionLinks.map((condition, idx) => (
                 <Section.Container key={this.state.conditions[idx].key}>
-                  <Section.Header>Condition {idx + 1}</Section.Header>
+                  <Section.Header>{t(`rulesFlyout.condition.condition`)} {idx + 1}</Section.Header>
                   <Section.Content>
                     {
                       conditionLinks.length > 1 &&
                       <Btn svg={svgs.trash} onClick={this.deleteCondition(idx)}>Delete</Btn>
                     }
                     <FormGroup>
-                      <FormLabel isRequired="true">Field</FormLabel>
+                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.field`)}</FormLabel>
                       <FormControl
                         type="select"
                         className="long"
@@ -145,7 +145,7 @@ export class RuleNew extends LinkedComponent {
                         link={condition.field} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel isRequired="true">Calculation</FormLabel>
+                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.calculation`)}</FormLabel>
                       <FormControl
                         type="select"
                         className="long"
@@ -153,7 +153,7 @@ export class RuleNew extends LinkedComponent {
                         link={condition.calculation} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel isRequired="true">Time Period</FormLabel>
+                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.timePeriod`)}</FormLabel>
                       <FormControl
                         type="duration"
                         className="long"
@@ -161,7 +161,7 @@ export class RuleNew extends LinkedComponent {
                         link={condition.timePeriod} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel isRequired="true">Operator</FormLabel>
+                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.operator`)}</FormLabel>
                       <FormControl
                         type="select"
                         className="short"
@@ -169,7 +169,7 @@ export class RuleNew extends LinkedComponent {
                         link={condition.operator} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel isRequired="true">Value</FormLabel>
+                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.value`)}</FormLabel>
                       <FormControl
                         type="text"
                         placeholder="Enter value"
@@ -180,7 +180,7 @@ export class RuleNew extends LinkedComponent {
               ))
             }
             <Section.Container collapsable={false}>
-              <Section.Header>Severity level</Section.Header>
+              <Section.Header>{t(`rulesFlyout.severityLevel`)}</Section.Header>
               <Section.Content>
                 <FormGroup>
                   <Radio
@@ -200,7 +200,7 @@ export class RuleNew extends LinkedComponent {
                   </Radio>
                 </FormGroup>
               </Section.Content>
-              <Section.Header>Rule status</Section.Header>
+              <Section.Header>{t(`rulesFlyout.ruleStatus`)}</Section.Header>
               <Section.Content>
                 <ToggleBtn value={this.state.ruleStatus}>Enabled</ToggleBtn>
               </Section.Content>
@@ -208,12 +208,12 @@ export class RuleNew extends LinkedComponent {
             <Section.Container collapsable={false}>
               <Section.Content className="devices-affected">
                 <div className="devices-affected-dynamic">{this.state.devicesAffected}</div>
-                <div className="devices-affected-static">devices affected by this rule</div>
+                <div className="devices-affected-static">{t(`rulesFlyout.devicesAffected`)}</div>
               </Section.Content>
             </Section.Container>
             <BtnToolbar className="apply-cancel">
-              <Btn type="submit">Apply</Btn>
-              <Btn onClick={onClose}>Cancel</Btn>
+              <Btn type="submit">{t(`rulesFlyout.apply`)}</Btn>
+              <Btn onClick={onClose}>{t(`rulesFlyout.cancel`)}</Btn>
             </BtnToolbar>
           </form>
         </Flyout.Content>
