@@ -60,7 +60,7 @@
       "calculationPlaceholder": "select",
       "timePeriod": "Time Period",
       "operator": "Operator",
-      "operatorPlaceholder": "> =",
+      "operatorPlaceholder": ">=",
       "value": "Value",
       "valuePlaceholder": "Enter value"
     },
