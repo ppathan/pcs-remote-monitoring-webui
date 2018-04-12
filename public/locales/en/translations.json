@@ -66,6 +66,8 @@
     },
     "severityLevel": "Severity level",
     "ruleStatus": "Rule status",
+    "ruleEnabled": "Enabled",
+    "ruleDisabled": "Disabled",
     "devicesAffected": "devices affected by this rule",
     "apply": "Apply",
     "cancel": "Cancel"

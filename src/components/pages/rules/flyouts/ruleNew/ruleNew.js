@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import React from 'react';
+import moment from 'moment';
 import {
   Btn,
   BtnToolbar,
@@ -26,14 +27,14 @@ let conditionKey = 0;
 
 // Creates a state object for a condition
 const newCondition = () => ({
-  field: '',
-  calculation: '',
-  timePeriod: {
-    hours: '',
-    minutes: '',
-    seconds: ''
+  fieldOptions: [],
+  calculationOptions: [],
+  duration: {
+    hours: "",
+    minutes: "",
+    seconds: ""
   },
-  operator: '',
+  operatorOptions: [],
   value: '',
   key: conditionKey++ // Used by react to track the rendered elements
 });
@@ -46,7 +47,7 @@ export class RuleNew extends LinkedComponent {
     this.state = {
       name: '',
       description: '',
-      deviceGroup: '',
+      deviceGroupOptions: [],
       conditions: [newCondition()], // Start with one condition
       severityLevel: {
         critical: true,
@@ -62,6 +63,14 @@ export class RuleNew extends LinkedComponent {
     this.descriptionLink = this.linkTo('description');
     this.deviceGroupLink = this.linkTo('deviceGroup');
     this.conditionsLink = this.linkTo('conditions');
+  }
+
+  componentDidMount() {
+    this.getFormState(this.props);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    this.getFormState(nextProps);
   }
 
   addCondition = () => this.conditions.set([...this.conditions.value, newCondition()]);
@@ -81,7 +90,11 @@ export class RuleNew extends LinkedComponent {
     // Create the state link for the dynamic form elements
     const conditionLinks = this.conditionsLink.getLinkedChildren(conditionLink => {
       const fieldLink = conditionLink.forkTo('field');
-      return { fieldLink };
+      const calculationLink = conditionLink.forkTo('calculation');
+      const operatorLink = conditionLink.forkTo('operator');
+      const valueLink = conditionLink.forkTo('value');
+      const durationLink = conditionLink.forkTo('duration');
+      return { fieldLink, calculationLink, operatorLink, valueLink, durationLink };
     });
 
     return (
@@ -114,6 +127,9 @@ export class RuleNew extends LinkedComponent {
                   <FormControl
                     type="select"
                     className="long"
+                    options={this.state.deviceGroup}
+                    clearable={false}
+                    searchable={true}
                     placeholder={t(`rulesFlyout.deviceGroupPlaceholder`)}
                     link={this.deviceGroupLink} />
                 </FormGroup>
@@ -141,7 +157,10 @@ export class RuleNew extends LinkedComponent {
                         type="select"
                         className="long"
                         placeholder={t(`rulesFlyout.condition.fieldPlaceholder`)}
-                        link={condition.field} />
+                        link={condition.fieldLink}
+                        options={this.state.conditions[idx].field}
+                        clearable={false}
+                        searchable={false} />
                     </FormGroup>
                     <FormGroup>
                       <FormLabel isRequired="true">{t(`rulesFlyout.condition.calculation`)}</FormLabel>
@@ -149,14 +168,17 @@ export class RuleNew extends LinkedComponent {
                         type="select"
                         className="long"
                         placeholder={t(`rulesFlyout.condition.calculationPlaceholder`)}
-                        link={condition.calculation} />
+                        link={condition.calculationLink}
+                        options={this.state.conditions[idx].calculation}
+                        clearable={false}
+                        searchable={false} />
                     </FormGroup>
                     <FormGroup>
                       <FormLabel isRequired="true">{t(`rulesFlyout.condition.timePeriod`)}</FormLabel>
                       <FormControl
                         type="duration"
                         className="long"
-                        link={condition.timePeriod} />
+                        link={condition.durationLink} />
                     </FormGroup>
                     <FormGroup>
                       <FormLabel isRequired="true">{t(`rulesFlyout.condition.operator`)}</FormLabel>
@@ -164,14 +186,17 @@ export class RuleNew extends LinkedComponent {
                         type="select"
                         className="short"
                         placeholder={t(`rulesFlyout.condition.operatorPlaceholder`)}
-                        link={condition.operator} />
+                        link={condition.operatorLink}
+                        options={this.state.conditions[idx].operator}
+                        clearable={false}
+                        searchable={false} />
                     </FormGroup>
                     <FormGroup>
                       <FormLabel isRequired="true">{t(`rulesFlyout.condition.value`)}</FormLabel>
                       <FormControl
                         type="text"
                         placeholder={t(`rulesFlyout.condition.valuePlaceholder`)}
-                        link={condition.value} />
+                        link={condition.valueLink} />
                     </FormGroup>
                   </Section.Content>
                 </Section.Container>
@@ -184,23 +209,23 @@ export class RuleNew extends LinkedComponent {
                   <Radio
                     placeholder="critical"
                     checked={this.state.severityLevel.critical}>
-                    <SeverityRenderer value="Critical" context={{ t }} iconOnly={false} />
+                    <SeverityRenderer value={'Critical'} context={{ t }} iconOnly={false} />
                   </Radio>
                   <Radio
                     placeholder="warning"
                     checked={this.state.severityLevel.warning} >
-                    <SeverityRenderer value="Warning" context={{ t }} iconOnly={false} />
+                    <SeverityRenderer value={"Warning"} context={{ t }} iconOnly={false} />
                   </Radio>
                   <Radio
                     placeholder="info"
                     checked={this.state.severityLevel.info} >
-                    <SeverityRenderer value="Info" context={{ t }} iconOnly={false} />
+                    <SeverityRenderer value={"Info"} context={{ t }} iconOnly={false} />
                   </Radio>
                 </FormGroup>
               </Section.Content>
               <Section.Header>{t(`rulesFlyout.ruleStatus`)}</Section.Header>
               <Section.Content>
-                <ToggleBtn value={this.state.ruleStatus}>Enabled</ToggleBtn>
+                <ToggleBtn value={this.state.ruleStatus}>{this.state.ruleStatus ? t(`rulesFlyout.ruleEnabled`) : t(`rulesFlyout.ruleDisabled`)}</ToggleBtn>
               </Section.Content>
             </Section.Container>
             <Section.Container collapsable={false}>

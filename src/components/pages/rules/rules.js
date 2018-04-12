@@ -56,7 +56,7 @@ export class Rules extends Component {
   getSoftSelectId = ({ id }) => id;
 
   render () {
-    const { t, rules, error, isPending, lastUpdated, entities, fetchRules } = this.props;
+    const { t, rules, error, isPending, lastUpdated, entities, fetchRules, deviceGroups } = this.props;
     const gridProps = {
       rowData: isPending ? undefined : rules || [],
       onSoftSelectChange: this.onSoftSelectChange,
@@ -81,7 +81,7 @@ export class Rules extends Component {
         { !error && <RulesGrid {...gridProps} /> }
         <Btn onClick={this.changeDeviceGroup}>Refresh Device Groups</Btn>
         { this.state.openFlyoutName === 'details' && <RuleDetails onClose={this.closeFlyout} rule={entities[this.state.selectedRuleId]} /> }
-        { this.state.openFlyoutName === 'newRule' && <RuleNew onClose={this.closeFlyout} t={this.props.t} /> }
+        { this.state.openFlyoutName === 'newRule' && <RuleNew onClose={this.closeFlyout} t={this.props.t} deviceGroups={deviceGroups} /> }
       </PageContent>
     ];
   }
