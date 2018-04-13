@@ -4,6 +4,7 @@ import React, { Component } from 'react';
 import { Btn, PcsGrid } from 'components/shared';
 import { checkboxParams, deviceColumnDefs, defaultDeviceGridProps } from './devicesGridConfig';
 import { DeviceDeleteContainer } from '../flyouts/deviceDelete';
+import { DeviceJobsContainer } from '../flyouts/deviceJobs';
 import { isFunc, svgs, translateColumnDefs } from 'utilities';
 
 const closedFlyoutState = { openFlyoutName: undefined };
@@ -31,18 +32,13 @@ export class DevicesGrid extends Component {
       deviceColumnDefs.lastConnection
     ];
 
-    // TODO: This is a temporary example implementation. Remove with a better version
     this.contextBtns = [
-      <Btn key="tag">Tag</Btn>,
-      <Btn key="schedule">Schedule</Btn>,
-      <Btn key="reconfigure">Reconfigure</Btn>,
-      <Btn key="delete" svg={svgs.trash} onClick={this.openDeleteFlyout}>{props.t('devices.flyouts.delete.apply')}</Btn>
+      <Btn key="jobs" svg={svgs.reconfigure} onClick={() => this.setState({ openFlyoutName: 'jobs' })}>{props.t('devices.flyouts.jobs.title')}</Btn>,
+      <Btn key="delete" svg={svgs.trash} onClick={() => this.setState({ openFlyoutName: 'delete' })}>{props.t('devices.flyouts.delete.title')}</Btn>
     ];
   }
 
   closeFlyout = () => this.setState(closedFlyoutState);
-
-  openDeleteFlyout = () => this.setState({ openFlyoutName: 'delete' });
 
   componentWillReceiveProps(nextProps) {
     const { hardSelectedDevices } = nextProps;
@@ -114,9 +110,20 @@ export class DevicesGrid extends Component {
       onHardSelectChange: this.onHardSelectChange,
       onGridReady: this.onGridReady
     };
-    const openFlyout = (this.state.openFlyoutName === 'delete')
-      ? <DeviceDeleteContainer key="device-flyout-key" onClose={this.closeFlyout} devices={this.deviceGridApi.getSelectedRows()} />
-      : null;
+
+    let openFlyout = null;
+    switch (this.state.openFlyoutName) {
+      case 'delete':
+        openFlyout = <DeviceDeleteContainer key="device-flyout-key" onClose={this.closeFlyout} devices={this.deviceGridApi.getSelectedRows()} />
+        break;
+      case 'jobs':
+        openFlyout = <DeviceJobsContainer key="device-flyout-key" onClose={this.closeFlyout} devices={this.deviceGridApi.getSelectedRows()} />
+        break;
+      default:
+        openFlyout = null;
+        break;
+    }
+
     return ([
       <PcsGrid key="device-grid-key" {...gridProps} />,
       openFlyout
