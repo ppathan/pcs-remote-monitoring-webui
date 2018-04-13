@@ -39,4 +39,10 @@
     @include rem-fallback(left, 180px);
     @include rem-fallback(top, 42px);
   }
+
+  .delete-btn {
+    @include rem-fallback(margin-left, 0px);
+    @include rem-fallback(padding-left, 0px);
+    @include rem-fallback(padding-top, 24px);
+  }
 }

@@ -64,6 +64,8 @@
       "value": "Value",
       "valuePlaceholder": "Enter value"
     },
+    "calculationAverage": "Average",
+    "calculationInstant": "Instant",
     "severityLevel": "Severity level",
     "ruleStatus": "Rule status",
     "ruleEnabled": "Enabled",

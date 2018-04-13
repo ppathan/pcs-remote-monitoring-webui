@@ -30,7 +30,15 @@ const Config = {
     return validExtensions.indexOf('.' + fileExt) > -1;
   },
   emptyValue: '--',
-  maxTopAlarms: 5
+  maxTopAlarms: 5,
+
+  OPERATOR_OPTIONS: [
+    { value: 'GreaterThan', label: '>' },
+    { value: 'GreaterThanOrEqual', label: '>=' },
+    { value: 'LessThan', label: '<' },
+    { value: 'LessThanOrEqual', label: '<=' },
+    { value: 'Equals', label: '=' }
+  ],
 };
 
 export default Config;
