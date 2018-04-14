@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft. All rights reserved.
-const baseUrl = process.env.REACT_APP_BASE_SERVICE_URL || 'https://isaactest1.azurewebsites.net';
+const baseUrl = process.env.REACT_APP_BASE_SERVICE_URL || '';
 const validExtensions = ['.png', '.jpeg', '.jpg', '.svg'];
 
 const Config = {
