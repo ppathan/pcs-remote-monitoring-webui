@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import React from 'react';
-import moment from 'moment';
 import {
   Btn,
   BtnToolbar,
@@ -20,7 +19,7 @@ import { IoTHubManagerService } from 'services';
 
 const Section = Flyout.Section;
 const ruleNameValidator = (new Validator()).check(Validator.notEmpty, 'Name is required');
-
+const tPath = "rules.flyouts.ruleEditor.";
 // A counter for creating unique keys per new condition
 let conditionKey = 0;
 
@@ -80,8 +79,8 @@ export class RuleNew extends LinkedComponent {
   getFormState = (props) => {
     const { deviceGroups, t } = props;
     const deviceGroupOptions = [...(deviceGroups || []).map(this.toSelectOption)];
-    const average = t("rulesFlyout.calculationAverage");
-    const instant = t("rulesFlyout.calculationInstant");
+    const average = t(`${tPath}calculationAverage`);
+    const instant = t(`${tPath}calculationInstant`);
     const calculationOptions = [{ value: average, label: average }, { value: instant, label: instant }];
     this.setState({
       deviceGroupOptions,
@@ -163,7 +162,7 @@ export class RuleNew extends LinkedComponent {
     return (
       <Flyout.Container>
         <Flyout.Header>
-          <Flyout.Title>{t(`rulesFlyout.newRule`)}</Flyout.Title>
+          <Flyout.Title>{t(`${tPath}newRule`)}</Flyout.Title>
           <Flyout.CloseBtn onClick={onClose} />
         </Flyout.Header>
         <Flyout.Content className="new-rule-flyout-container">
@@ -171,22 +170,22 @@ export class RuleNew extends LinkedComponent {
             <Section.Container className="rule-property-container">
               <Section.Content>
                 <FormGroup>
-                  <FormLabel isRequired="true">{t(`rulesFlyout.ruleName`)}</FormLabel>
+                  <FormLabel isRequired="true">{t(`${tPath}ruleName`)}</FormLabel>
                   <FormControl
                     type="text"
                     className="long"
-                    placeholder={t(`rulesFlyout.namePlaceholder`)}
+                    placeholder={t(`${tPath}namePlaceholder`)}
                     link={name} />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel>{t(`rulesFlyout.description`)}</FormLabel>
+                  <FormLabel>{t(`${tPath}description`)}</FormLabel>
                   <FormControl
                     type="textarea"
-                    placeholder={t(`rulesFlyout.descriptionPlaceholder`)}
+                    placeholder={t(`${tPath}descriptionPlaceholder`)}
                     link={this.descriptionLink} />
                 </FormGroup>
                 <FormGroup>
-                  <FormLabel isRequired="true">{t(`rulesFlyout.deviceGroup`)}</FormLabel>
+                  <FormLabel isRequired="true">{t(`${tPath}deviceGroup`)}</FormLabel>
                   <FormControl
                     type="select"
                     className="long"
@@ -194,58 +193,58 @@ export class RuleNew extends LinkedComponent {
                     onChange={this.onGroupIdChange}
                     clearable={false}
                     searchable={true}
-                    placeholder={t(`rulesFlyout.deviceGroupPlaceholder`)}
+                    placeholder={t(`${tPath}deviceGroupPlaceholder`)}
                     link={this.deviceGroupLink} />
                 </FormGroup>
               </Section.Content>
             </Section.Container>
 
             <Section.Container collapsable={false}>
-              <Section.Header>{t(`rulesFlyout.conditions`)}</Section.Header>
+              <Section.Header>{t(`${tPath}conditions`)}</Section.Header>
               <Section.Content>
-                <Btn svg={svgs.plus} onClick={this.addCondition}>{t(`rulesFlyout.addCondition`)}</Btn>
+                <Btn svg={svgs.plus} onClick={this.addCondition}>{t(`${tPath}addCondition`)}</Btn>
               </Section.Content>
             </Section.Container>
             {
               conditionLinks.map((condition, idx) => (
                 <Section.Container key={this.state.conditions[idx].key}>
-                  <Section.Header>{t(`rulesFlyout.condition.condition`)} {idx + 1}</Section.Header>
+                  <Section.Header>{t(`${tPath}condition.condition`)} {idx + 1}</Section.Header>
                   <Section.Content>
                     <FormGroup>
-                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.field`)}</FormLabel>
+                      <FormLabel isRequired="true">{t(`${tPath}condition.field`)}</FormLabel>
                       <FormControl
                         type="select"
                         className="long"
-                        placeholder={t(`rulesFlyout.condition.fieldPlaceholder`)}
+                        placeholder={t(`${tPath}condition.fieldPlaceholder`)}
                         link={condition.fieldLink}
                         options={this.state.fieldOptions}
                         clearable={false}
                         searchable={true} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.calculation`)}</FormLabel>
+                      <FormLabel isRequired="true">{t(`${tPath}condition.calculation`)}</FormLabel>
                       <FormControl
                         type="select"
                         className="long"
-                        placeholder={t(`rulesFlyout.condition.calculationPlaceholder`)}
+                        placeholder={t(`${tPath}condition.calculationPlaceholder`)}
                         link={condition.calculationLink}
                         options={this.state.calculationOptions}
                         clearable={false}
                         searchable={false} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.timePeriod`)}</FormLabel>
+                      <FormLabel isRequired="true">{t(`${tPath}condition.timePeriod`)}</FormLabel>
                       <FormControl
                         type="duration"
                         className="long"
                         link={condition.durationLink} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.operator`)}</FormLabel>
+                      <FormLabel isRequired="true">{t(`${tPath}condition.operator`)}</FormLabel>
                       <FormControl
                         type="select"
                         className="short"
-                        placeholder={t(`rulesFlyout.condition.operatorPlaceholder`)}
+                        placeholder={t(`${tPath}condition.operatorPlaceholder`)}
                         link={condition.operatorLink}
                         options={this.state.operatorOptions}
                         value={this.state.operatorOptions[0].value}
@@ -253,55 +252,58 @@ export class RuleNew extends LinkedComponent {
                         searchable={false} />
                     </FormGroup>
                     <FormGroup>
-                      <FormLabel isRequired="true">{t(`rulesFlyout.condition.value`)}</FormLabel>
+                      <FormLabel isRequired="true">{t(`${tPath}condition.value`)}</FormLabel>
                       <FormControl
                         type="text"
-                        placeholder={t(`rulesFlyout.condition.valuePlaceholder`)}
+                        placeholder={t(`${tPath}condition.valuePlaceholder`)}
                         link={condition.valueLink} />
                     </FormGroup>
                     {
                       conditionLinks.length > 1 &&
-                      <Btn className="delete-btn" svg={svgs.trash} onClick={this.deleteCondition(idx)}>Delete</Btn>
+                      <Btn className="delete-btn flyout-btns" svg={svgs.trash} onClick={this.deleteCondition(idx)}>{t(`${tPath}delete`)}</Btn>
                     }
                   </Section.Content>
                 </Section.Container>
               ))
             }
             <Section.Container collapsable={false}>
-              <Section.Header>{t(`rulesFlyout.severityLevel`)}</Section.Header>
+              <Section.Header>{t(`${tPath}severityLevel`)}</Section.Header>
               <Section.Content>
                 <FormGroup>
                   <Radio
+                    className="flyout-btns"
                     placeholder="critical"
                     checked={this.state.severityLevel.critical}>
-                    <SeverityRenderer value={'Critical'} context={{ t }} iconOnly={false} />
+                    <SeverityRenderer value={"critical"} context={{ t }} iconOnly={false} />
                   </Radio>
                   <Radio
+                    className="flyout-btns"
                     placeholder="warning"
                     checked={this.state.severityLevel.warning} >
-                    <SeverityRenderer value={"Warning"} context={{ t }} iconOnly={false} />
+                    <SeverityRenderer value={"warning"} context={{ t }} iconOnly={false} />
                   </Radio>
                   <Radio
+                    className="flyout-btns"
                     placeholder="info"
                     checked={this.state.severityLevel.info} >
-                    <SeverityRenderer value={"Info"} context={{ t }} iconOnly={false} />
+                    <SeverityRenderer value={"info"} context={{ t }} iconOnly={false} />
                   </Radio>
                 </FormGroup>
               </Section.Content>
-              <Section.Header>{t(`rulesFlyout.ruleStatus`)}</Section.Header>
+              <Section.Header>{t(`${tPath}ruleStatus`)}</Section.Header>
               <Section.Content>
-                <ToggleBtn value={this.state.ruleStatus}>{this.state.ruleStatus ? t(`rulesFlyout.ruleEnabled`) : t(`rulesFlyout.ruleDisabled`)}</ToggleBtn>
+                <ToggleBtn value={this.state.ruleStatus}>{this.state.ruleStatus ? t(`${tPath}ruleEnabled`) : t(`${tPath}ruleDisabled`)}</ToggleBtn>
               </Section.Content>
             </Section.Container>
             <Section.Container collapsable={false}>
               <Section.Content className="devices-affected">
                 <div className="devices-affected-dynamic">{this.state.devicesAffected}</div>
-                <div className="devices-affected-static">{t(`rulesFlyout.devicesAffected`)}</div>
+                <div className="devices-affected-static">{t(`${tPath}devicesAffected`)}</div>
               </Section.Content>
             </Section.Container>
             <BtnToolbar className="apply-cancel">
-              <Btn type="submit">{t(`rulesFlyout.apply`)}</Btn>
-              <Btn onClick={onClose}>{t(`rulesFlyout.cancel`)}</Btn>
+              <Btn type="submit">{t(`${tPath}apply`)}</Btn>
+              <Btn onClick={onClose}>{t(`${tPath}cancel`)}</Btn>
             </BtnToolbar>
           </form>
         </Flyout.Content>
