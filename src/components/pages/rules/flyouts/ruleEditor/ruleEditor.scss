@@ -40,7 +40,7 @@
     @include rem-fallback(top, 42px);
   }
 
-  .delete-btn {
+  .padded-top {
     margin-left: 0px;
     padding-left: 0px;
     @include rem-fallback(padding-top, 24px);

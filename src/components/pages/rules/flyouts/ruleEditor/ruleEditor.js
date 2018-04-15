@@ -11,7 +11,11 @@ import {
   ToggleBtn
 } from 'components/shared';
 import { SeverityRenderer } from 'components/shared/cellRenderers';
-import { Validator, svgs, LinkedComponent } from 'utilities';
+import {
+  Validator,
+  svgs,
+  LinkedComponent
+} from 'utilities';
 import Flyout from 'components/shared/flyout';
 import Config from 'app.config';
 import './ruleEditor.css';
@@ -19,73 +23,64 @@ import { IoTHubManagerService } from 'services';
 
 const Section = Flyout.Section;
 const ruleNameValidator = (new Validator()).check(Validator.notEmpty, 'Name is required');
+const deviceGroupValidator = (new Validator()).check(Validator.notEmpty, 'Device group is required');
 const tPath = "rules.flyouts.ruleEditor.";
-const severityLevel = ["critical", "warning", "info"];
-const calculation = ["average", "instant"];
+const severityLevels = ["critical", "warning", "info"];
+const calculations = ["average", "instant"];
+var deviceGroupOptions = [];
+var fieldOptions = [];
+var calculationOptions = [];
+var operatorOptions = [...(Config.OPERATOR_OPTIONS)];
 // A counter for creating unique keys per new condition
 let conditionKey = 0;
 
 // Creates a state object for a condition
 const newCondition = () => ({
   calculation: "",
-  duration: {
-    hours: "",
-    minutes: "",
-    seconds: ""
-  },
+  duration: "00:00:00",
   operator: Config.OPERATOR_OPTIONS[0].value,
-  value: '',
+  value: "",
   key: conditionKey++ // Used by react to track the rendered elements
 });
+
+// A state object for a new rule
+const newRule = {
+  name: '',
+  description: '',
+  deviceGroupID: '',
+  conditions: [newCondition()], // Start with one condition
+  severityLevel: severityLevels[0],
+  ruleStatus: true,
+  devicesAffected: 0
+}
 
 export class RuleEditor extends LinkedComponent {
 
   constructor(props) {
     super(props);
 
-    this.state = {
-      name: '',
-      description: '',
-      deviceGroupID: '',
-      deviceGroupOptions: [],
-      fieldOptions: [],
-      conditions: [newCondition()], // Start with one condition
-      calculationOptions: [],
-      operatorOptions: [...(Config.OPERATOR_OPTIONS)],
-      severityLevel: "critical",
-      ruleStatus: true,
-      devicesAffected: 0
-    };
+    const { t, deviceGroups, rule } = props;
+    this.state = rule ? { ...rule } : { ...newRule };
+
+    deviceGroupOptions = [...(deviceGroups || []).map(this.toSelectOption)];
+
+    calculationOptions = [
+      { value: calculations[0], label: t(`${tPath}calculationAverage`) },
+      { value: calculations[1], label: t(`${tPath}calculationInstant`) }
+    ];
 
     // State links
-    this.ruleNameLink = this.linkTo('name');
-    this.descriptionLink = this.linkTo('description');
-    this.deviceGroupLink = this.linkTo('deviceGroupID');
-    this.conditionsLink = this.linkTo('conditions');
+    this.ruleNameLink = this.linkTo("name").withValidator(ruleNameValidator);
+    this.descriptionLink = this.linkTo("description");
+    this.deviceGroupLink = this.linkTo("deviceGroupID").withValidator(deviceGroupValidator);
+    this.conditionsLink = this.linkTo("conditions");
   }
 
-  componentDidMount() {
-    this.getFormState(this.props);
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.getFormState(nextProps);
+  componentWillUnmount() {
+    if (this.subscription) this.subscription.unsubscribe();
   }
 
   toSelectOption = ({ id, displayName }) => ({ value: id, label: displayName });
-
-  getFormState = (props) => {
-    const { deviceGroups, t } = props;
-    const deviceGroupOptions = [...(deviceGroups || []).map(this.toSelectOption)];
-    const calculationOptions = [
-      { value: calculation[0], label: t(`${tPath}calculationAverage`) },
-      { value: calculation[1], label: t(`${tPath}calculationInstant`) }
-    ];
-    this.setState({
-      deviceGroupOptions,
-      calculationOptions
-    });
-  }
 
   addCondition = () => this.conditionsLink.set([...this.conditionsLink.value, newCondition()]);
 
@@ -107,10 +102,9 @@ export class RuleEditor extends LinkedComponent {
         this.subscription = IoTHubManagerService.getDevices(group.Conditions)
           .subscribe(
             groupDevices => {
+              fieldOptions = this.getConditionFields(groupDevices);
               this.setState({
-                groupDevices,
-                devicesAffected: groupDevices.length,
-                fieldOptions: this.getConditionFields(groupDevices)
+                devicesAffected: groupDevices.length
               });
             },
             errorResponse => {
@@ -143,10 +137,14 @@ export class RuleEditor extends LinkedComponent {
     return fields;
   }
 
+  onSeverityChange = (proxy) => {
+    this.setState({
+      severityLevel: proxy.target.value
+    });
+  }
+
   render() {
     const { onClose, t } = this.props;
-    const name = this.ruleNameLink.forkTo('name')
-      .withValidator(ruleNameValidator);
     // Create the state link for the dynamic form elements
     const conditionLinks = this.conditionsLink.getLinkedChildren(conditionLink => {
       const fieldLink = conditionLink.forkTo('field');
@@ -173,7 +171,7 @@ export class RuleEditor extends LinkedComponent {
                     type="text"
                     className="long"
                     placeholder={t(`${tPath}namePlaceholder`)}
-                    link={name} />
+                    link={this.ruleNameLink} />
                 </FormGroup>
                 <FormGroup>
                   <FormLabel>{t(`${tPath}description`)}</FormLabel>
@@ -187,7 +185,7 @@ export class RuleEditor extends LinkedComponent {
                   <FormControl
                     type="select"
                     className="long"
-                    options={this.state.deviceGroupOptions}
+                    options={deviceGroupOptions}
                     onChange={this.onGroupIdChange}
                     clearable={false}
                     searchable={true}
@@ -215,7 +213,7 @@ export class RuleEditor extends LinkedComponent {
                         className="long"
                         placeholder={t(`${tPath}condition.fieldPlaceholder`)}
                         link={condition.fieldLink}
-                        options={this.state.fieldOptions}
+                        options={fieldOptions}
                         clearable={false}
                         searchable={true} />
                     </FormGroup>
@@ -226,12 +224,12 @@ export class RuleEditor extends LinkedComponent {
                         className="long"
                         placeholder={t(`${tPath}condition.calculationPlaceholder`)}
                         link={condition.calculationLink}
-                        options={this.state.calculationOptions}
+                        options={calculationOptions}
                         onChange={this.onCalculationChange}
                         clearable={false}
                         searchable={false} />
                     </FormGroup>
-                    {this.state.conditions[idx].calculation.value === calculation[0] &&
+                    {this.state.conditions[idx].calculation.value === calculations[0] &&
                       <FormGroup>
                         <FormLabel isRequired="true">{t(`${tPath}condition.timePeriod`)}</FormLabel>
                         <FormControl
@@ -246,8 +244,7 @@ export class RuleEditor extends LinkedComponent {
                         className="short"
                         placeholder={t(`${tPath}condition.operatorPlaceholder`)}
                         link={condition.operatorLink}
-                        options={this.state.operatorOptions}
-                        value={this.state.operatorOptions[0].value}
+                        options={operatorOptions}
                         clearable={false}
                         searchable={false} />
                     </FormGroup>
@@ -260,33 +257,41 @@ export class RuleEditor extends LinkedComponent {
                     </FormGroup>
                     {
                       conditionLinks.length > 1 &&
-                      <Btn className="delete-btn flyout-btns" svg={svgs.trash} onClick={this.deleteCondition(idx)}>{t(`${tPath}delete`)}</Btn>
+                      <Btn className="padded-top flyout-btns" svg={svgs.trash} onClick={this.deleteCondition(idx)}>{t(`${tPath}delete`)}</Btn>
                     }
                   </Section.Content>
                 </Section.Container>
               ))
             }
             <Section.Container collapsable={false}>
-              <Section.Header>{t(`${tPath}severityLevel`)}</Section.Header>
               <Section.Content>
-                <FormGroup>
+                <FormGroup className="padded-top">
+                  <FormLabel>{t(`${tPath}severityLevel`)}</FormLabel>
                   <Radio
-                    checked={this.state.severityLevel === severityLevel[0]}>
-                    <SeverityRenderer value={severityLevel[0]} context={{ t }} iconOnly={false} />
+                    onChange={this.onSeverityChange}
+                    value={severityLevels[0]}
+                    checked={this.state.severityLevel === severityLevels[0]}>
+                    <SeverityRenderer value={severityLevels[0]} context={{ t }} iconOnly={false} />
                   </Radio>
                   <Radio
-                    checked={this.state.severityLevel === severityLevel[1]} >
-                    <SeverityRenderer value={severityLevel[1]} context={{ t }} iconOnly={false} />
+                    onChange={this.onSeverityChange}
+                    value={severityLevels[1]}
+                    checked={this.state.severityLevel === severityLevels[1]} >
+                    <SeverityRenderer value={severityLevels[1]} context={{ t }} iconOnly={false} />
                   </Radio>
                   <Radio
-                    checked={this.state.severityLevel === severityLevel[2]} >
-                    <SeverityRenderer value={severityLevel[2]} context={{ t }} iconOnly={false} />
+                    onChange={this.onSeverityChange}
+                    value={severityLevels[2]}
+                    checked={this.state.severityLevel === severityLevels[2]} >
+                    <SeverityRenderer value={severityLevels[2]} context={{ t }} iconOnly={false} />
                   </Radio>
                 </FormGroup>
               </Section.Content>
-              <Section.Header>{t(`${tPath}ruleStatus`)}</Section.Header>
               <Section.Content>
-                <ToggleBtn value={this.state.ruleStatus}>{this.state.ruleStatus ? t(`${tPath}ruleEnabled`) : t(`${tPath}ruleDisabled`)}</ToggleBtn>
+                <FormGroup>
+                  <FormLabel>{t(`${tPath}ruleStatus`)}</FormLabel>
+                  <ToggleBtn value={this.state.ruleStatus}>{this.state.ruleStatus ? t(`${tPath}ruleEnabled`) : t(`${tPath}ruleDisabled`)}</ToggleBtn>
+                </FormGroup>
               </Section.Content>
             </Section.Container>
             <Section.Container collapsable={false}>
