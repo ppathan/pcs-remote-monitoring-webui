@@ -14,12 +14,14 @@ import { SeverityRenderer } from 'components/shared/cellRenderers';
 import { Validator, svgs, LinkedComponent } from 'utilities';
 import Flyout from 'components/shared/flyout';
 import Config from 'app.config';
-import './ruleNew.css';
+import './ruleEditor.css';
 import { IoTHubManagerService } from 'services';
 
 const Section = Flyout.Section;
 const ruleNameValidator = (new Validator()).check(Validator.notEmpty, 'Name is required');
 const tPath = "rules.flyouts.ruleEditor.";
+const severityLevel = ["critical", "warning", "info"];
+const calculation = ["average", "instant"];
 // A counter for creating unique keys per new condition
 let conditionKey = 0;
 
@@ -36,7 +38,7 @@ const newCondition = () => ({
   key: conditionKey++ // Used by react to track the rendered elements
 });
 
-export class RuleNew extends LinkedComponent {
+export class RuleEditor extends LinkedComponent {
 
   constructor(props) {
     super(props);
@@ -50,11 +52,7 @@ export class RuleNew extends LinkedComponent {
       conditions: [newCondition()], // Start with one condition
       calculationOptions: [],
       operatorOptions: [...(Config.OPERATOR_OPTIONS)],
-      severityLevel: {
-        critical: true,
-        warning: false,
-        info: false
-      },
+      severityLevel: "critical",
       ruleStatus: true,
       devicesAffected: 0
     };
@@ -79,9 +77,10 @@ export class RuleNew extends LinkedComponent {
   getFormState = (props) => {
     const { deviceGroups, t } = props;
     const deviceGroupOptions = [...(deviceGroups || []).map(this.toSelectOption)];
-    const average = t(`${tPath}calculationAverage`);
-    const instant = t(`${tPath}calculationInstant`);
-    const calculationOptions = [{ value: average, label: average }, { value: instant, label: instant }];
+    const calculationOptions = [
+      { value: calculation[0], label: t(`${tPath}calculationAverage`) },
+      { value: calculation[1], label: t(`${tPath}calculationInstant`) }
+    ];
     this.setState({
       deviceGroupOptions,
       calculationOptions
@@ -111,8 +110,7 @@ export class RuleNew extends LinkedComponent {
               this.setState({
                 groupDevices,
                 devicesAffected: groupDevices.length,
-                fieldOptions: this.getConditionFields(groupDevices),
-
+                fieldOptions: this.getConditionFields(groupDevices)
               });
             },
             errorResponse => {
@@ -207,7 +205,7 @@ export class RuleNew extends LinkedComponent {
             </Section.Container>
             {
               conditionLinks.map((condition, idx) => (
-                <Section.Container key={this.state.conditions[idx].key}>
+                <Section.Container key={this.state.conditions[idx].key} closed="true">
                   <Section.Header>{t(`${tPath}condition.condition`)} {idx + 1}</Section.Header>
                   <Section.Content>
                     <FormGroup>
@@ -229,16 +227,18 @@ export class RuleNew extends LinkedComponent {
                         placeholder={t(`${tPath}condition.calculationPlaceholder`)}
                         link={condition.calculationLink}
                         options={this.state.calculationOptions}
+                        onChange={this.onCalculationChange}
                         clearable={false}
                         searchable={false} />
                     </FormGroup>
-                    <FormGroup>
-                      <FormLabel isRequired="true">{t(`${tPath}condition.timePeriod`)}</FormLabel>
-                      <FormControl
-                        type="duration"
-                        className="long"
-                        link={condition.durationLink} />
-                    </FormGroup>
+                    {this.state.conditions[idx].calculation.value === calculation[0] &&
+                      <FormGroup>
+                        <FormLabel isRequired="true">{t(`${tPath}condition.timePeriod`)}</FormLabel>
+                        <FormControl
+                          type="duration"
+                          link={condition.durationLink} />
+                      </FormGroup>
+                    }
                     <FormGroup>
                       <FormLabel isRequired="true">{t(`${tPath}condition.operator`)}</FormLabel>
                       <FormControl
@@ -271,22 +271,16 @@ export class RuleNew extends LinkedComponent {
               <Section.Content>
                 <FormGroup>
                   <Radio
-                    className="flyout-btns"
-                    placeholder="critical"
-                    checked={this.state.severityLevel.critical}>
-                    <SeverityRenderer value={"critical"} context={{ t }} iconOnly={false} />
+                    checked={this.state.severityLevel === severityLevel[0]}>
+                    <SeverityRenderer value={severityLevel[0]} context={{ t }} iconOnly={false} />
                   </Radio>
                   <Radio
-                    className="flyout-btns"
-                    placeholder="warning"
-                    checked={this.state.severityLevel.warning} >
-                    <SeverityRenderer value={"warning"} context={{ t }} iconOnly={false} />
+                    checked={this.state.severityLevel === severityLevel[1]} >
+                    <SeverityRenderer value={severityLevel[1]} context={{ t }} iconOnly={false} />
                   </Radio>
                   <Radio
-                    className="flyout-btns"
-                    placeholder="info"
-                    checked={this.state.severityLevel.info} >
-                    <SeverityRenderer value={"info"} context={{ t }} iconOnly={false} />
+                    checked={this.state.severityLevel === severityLevel[2]} >
+                    <SeverityRenderer value={severityLevel[2]} context={{ t }} iconOnly={false} />
                   </Radio>
                 </FormGroup>
               </Section.Content>

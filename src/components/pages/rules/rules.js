@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import { RulesGrid } from './rulesGrid';
 import { Btn, RefreshBar, PageContent, ContextMenu } from 'components/shared';
-import { RuleDetails, RuleNew } from './flyouts';
+import { RuleDetails, RuleEditor } from './flyouts';
 import { svgs } from 'utilities';
 
 import './rules.css';
@@ -90,7 +90,7 @@ export class Rules extends Component {
         {!error && <RulesGrid {...gridProps} />}
         <Btn onClick={this.changeDeviceGroup}>Refresh Device Groups</Btn>
         {this.state.openFlyoutName === 'details' && <RuleDetails onClose={this.closeFlyout} rule={entities[this.state.selectedRuleId]} />}
-        {this.state.openFlyoutName === 'newRule' && <RuleNew onClose={this.closeFlyout} t={this.props.t} deviceGroups={deviceGroups} />}
+        {this.state.openFlyoutName === 'newRule' && <RuleEditor onClose={this.closeFlyout} t={this.props.t} deviceGroups={deviceGroups} />}
       </PageContent>
     ];
   }
