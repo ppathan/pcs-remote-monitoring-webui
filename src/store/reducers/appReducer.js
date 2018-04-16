@@ -31,6 +31,7 @@ export const epics = createEpicScenario({
     epic: () => [
       epics.actions.fetchAzureMapsKey(),
       epics.actions.fetchDeviceGroups(),
+      epics.actions.fetchDeviceGroupFilters(),
       epics.actions.fetchLogo(),
       epics.actions.fetchReleaseInformation(),
       redux.actions.updateActiveDeviceGroup()
@@ -43,6 +44,16 @@ export const epics = createEpicScenario({
     epic: fromAction =>
       ConfigService.getDeviceGroups()
         .map(toActionCreator(redux.actions.updateDeviceGroups, fromAction))
+        .catch(handleError(fromAction))
+  },
+
+  /** Get the account's device group filters */
+  fetchDeviceGroupFilters: {
+    type: 'APP_DEVICE_GROUP_FILTERS_FETCH',
+    epic: fromAction =>
+      ConfigService.getDeviceGroupFilters()
+        .do(a=>console.log('a', a))
+        .map(toActionCreator(redux.actions.updateDeviceGroupFilters, fromAction))
         .catch(handleError(fromAction))
   },
 
@@ -104,6 +115,7 @@ const deviceGroupListSchema = new schema.Array(deviceGroupSchema);
 const initialState = {
   ...errorPendingInitialState,
   deviceGroups: {},
+  deviceGroupFilters: {},
   activeDeviceGroupId: undefined,
   theme: 'dark',
   version: undefined,
@@ -115,9 +127,39 @@ const initialState = {
 };
 
 const updateDeviceGroupsReducer = (state, { payload, fromAction }) => {
+console.log('group payload in update', payload)
   const { entities: { deviceGroups } } = normalize(payload, deviceGroupListSchema);
   return update(state, {
     deviceGroups: { $set: deviceGroups },
+    ...setPending(fromAction.type, false)
+  });
+};
+
+const deleteDeviceGroupReducer = (state, { payload }) => {
+  return update(state, {
+    deviceGroups: { $unset: [payload] }
+  });
+};
+
+const insertDeviceGroupReducer = (state, { payload }) => {
+  const { entities: { deviceGroups } } = normalize(payload, deviceGroupListSchema);
+  return update(state, {
+    deviceGroups: { ...state.deviceGroup, ...deviceGroups },
+  });
+};
+
+const upsertDeviceGroupReducer = (state, { payload }) => {
+  const { entities: { deviceGroups } } = normalize(payload, deviceGroupListSchema);
+  return update(state, {
+    deviceGroups: { ...state.deviceGroup, ...deviceGroups },
+  });
+};
+
+const updateDeviceGroupFiltersReducer = (state, { payload, fromAction }) => {
+  //const { entities: { deviceGroups } } = normalize(payload, deviceGroupListSchema);
+  console.log('payload in update', payload)
+  return update(state, {
+    deviceGroupFilters: { $set: payload },
     ...setPending(fromAction.type, false)
   });
 };
@@ -150,6 +192,7 @@ const releaseReducer = (state, { payload }) => update(state, {
 /* Action types that cause a pending flag */
 const fetchableTypes = [
   epics.actionTypes.fetchDeviceGroups,
+  epics.actionTypes.fetchDeviceGroupFilters,
   epics.actionTypes.fetchAzureMapsKey,
   epics.actionTypes.updateLogo,
   epics.actionTypes.fetchLogo
@@ -157,6 +200,10 @@ const fetchableTypes = [
 
 export const redux = createReducerScenario({
   updateDeviceGroups: { type: 'APP_DEVICE_GROUP_UPDATE', reducer: updateDeviceGroupsReducer },
+  deleteDeviceGroup: { type: 'APP_DEVICE_GROUP_DELETE', reducer: deleteDeviceGroupReducer },
+  insertDeviceGroup: { type: 'APP_DEVICE_GROUP_INSERT', reducer: insertDeviceGroupReducer },
+  upsertDeviceGroup: { type: 'APP_DEVICE_GROUP_UPSERT', reducer: upsertDeviceGroupReducer },
+  updateDeviceGroupFilters: { type: 'APP_DEVICE_GROUP_FILTER_UPDATE', reducer: updateDeviceGroupFiltersReducer },
   updateAzureMapsKeyGroup: { type: 'APP_AZURE_MAPS_KEY_UPDATE', reducer: updateAzureMapsKeyReducer },
   updateActiveDeviceGroup: { type: 'APP_ACTIVE_DEVICE_GROUP_UPDATE', reducer: updateActiveDeviceGroupsReducer },
   changeTheme: { type: 'APP_CHANGE_THEME', reducer: updateThemeReducer },
@@ -180,6 +227,13 @@ export const getDeviceGroupsError = state =>
   getError(getAppReducer(state), epics.actionTypes.fetchDeviceGroups);
 export const getDeviceGroupsPendingStatus = state =>
   getPending(getAppReducer(state), epics.actionTypes.fetchDeviceGroups);
+
+export const getDeviceGroupFilters = state => getAppReducer(state).deviceGroupFilters;
+export const getDeviceGroupFiltersError = state =>
+  getError(getAppReducer(state), epics.actionTypes.fetchDeviceGroupFilters);
+export const getDeviceGroupFiltersPendingStatus = state =>
+  getPending(getAppReducer(state), epics.actionTypes.fetchDeviceGroupFilters);
+
 export const getAzureMapsKeyError = state =>
   getError(getAppReducer(state), epics.actionTypes.fetchAzureMapsKey);
 export const getAzureMapsKeyPendingStatus = state =>

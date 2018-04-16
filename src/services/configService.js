@@ -2,7 +2,12 @@
 
 import Config from 'app.config';
 import { HttpClient } from './httpClient';
-import { toDeviceGroupsModel, prepareLogoResponse, toSolutionSettingThemeModel } from './models';
+import {
+  toDeviceGroupsModel,
+  toDeviceGroupFiltersModel,
+  prepareLogoResponse,
+  toSolutionSettingThemeModel
+} from './models';
 
 const ENDPOINT = Config.serviceUrls.config;
 
@@ -13,6 +18,33 @@ export class ConfigService {
   static getDeviceGroups() {
     return HttpClient.get(`${ENDPOINT}devicegroups`)
       .map(toDeviceGroupsModel);
+  }
+
+  /** Returns a the account's device group filters */
+  static getDeviceGroupFilters() {
+    return HttpClient.get(`${ENDPOINT}devicegroupfilters`)
+      // .do(res => console.log('$%#',res)
+      //.map(toDeviceGroupFiltersModel);
+  }
+
+  /** Creates a device group filter */
+  static createtDeviceGroupFilter(payload) {
+    return HttpClient.post(`${ENDPOINT}devicegroupfilters`, payload);
+  }
+
+  /** Modify a device group filter by id */
+  static modifyDeviceGroupFilter(id, payload) {
+    return HttpClient.put(`${ENDPOINT}devicegroupfilters/${id}`, payload);
+  }
+
+  /** Delete a device group filter by id */
+  static deleteDeviceGroupFilter(id) {
+    return HttpClient.delete(`${ENDPOINT}devicegroupfilters/${id}`);
+  }
+
+  /** Returns a the account's device group filters */
+  static createtDeviceGroupFilter(payload) {
+    return HttpClient.post(`${ENDPOINT}devicegroupfilters`, payload);
   }
 
   /** Returns the azure map key for the account */
