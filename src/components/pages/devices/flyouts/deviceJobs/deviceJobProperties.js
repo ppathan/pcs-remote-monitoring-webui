@@ -8,7 +8,6 @@ import {
   SectionHeader
 } from '../../../../shared';
 
-
 export const DeviceJobProperties = (props) => {
   const { t, devices } = props;
   return (

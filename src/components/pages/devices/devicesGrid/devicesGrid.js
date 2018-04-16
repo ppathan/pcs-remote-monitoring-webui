@@ -33,9 +33,27 @@ export class DevicesGrid extends Component {
     ];
 
     this.contextBtns = [
-      <Btn key="jobs" svg={svgs.reconfigure} onClick={() => this.setState({ openFlyoutName: 'jobs' })}>{props.t('devices.flyouts.jobs.title')}</Btn>,
-      <Btn key="delete" svg={svgs.trash} onClick={() => this.setState({ openFlyoutName: 'delete' })}>{props.t('devices.flyouts.delete.title')}</Btn>
+      <Btn key="jobs" svg={svgs.reconfigure} onClick={() => this.openFlyout('jobs')}>{props.t('devices.flyouts.jobs.title')}</Btn>,
+      <Btn key="delete" svg={svgs.trash} onClick={() => this.openFlyout('delete')}>{props.t('devices.flyouts.delete.title')}</Btn>
     ];
+  }
+
+  openFlyout = (flyoutName) => this.setState({ openFlyoutName: flyoutName });
+
+  getOpenFlyout = () => {
+    let openFlyout = null;
+    switch (this.state.openFlyoutName) {
+      case 'delete':
+        openFlyout = <DeviceDeleteContainer key="device-flyout-key" onClose={this.closeFlyout} devices={this.deviceGridApi.getSelectedRows()} />
+        break;
+      case 'jobs':
+        openFlyout = <DeviceJobsContainer key="device-flyout-key" onClose={this.closeFlyout} devices={this.deviceGridApi.getSelectedRows()} />
+        break;
+      default:
+        openFlyout = null;
+        break;
+    }
+    return openFlyout;
   }
 
   closeFlyout = () => this.setState(closedFlyoutState);
@@ -111,22 +129,9 @@ export class DevicesGrid extends Component {
       onGridReady: this.onGridReady
     };
 
-    let openFlyout = null;
-    switch (this.state.openFlyoutName) {
-      case 'delete':
-        openFlyout = <DeviceDeleteContainer key="device-flyout-key" onClose={this.closeFlyout} devices={this.deviceGridApi.getSelectedRows()} />
-        break;
-      case 'jobs':
-        openFlyout = <DeviceJobsContainer key="device-flyout-key" onClose={this.closeFlyout} devices={this.deviceGridApi.getSelectedRows()} />
-        break;
-      default:
-        openFlyout = null;
-        break;
-    }
-
     return ([
       <PcsGrid key="device-grid-key" {...gridProps} />,
-      openFlyout
+      this.getOpenFlyout()
     ]);
   }
 }

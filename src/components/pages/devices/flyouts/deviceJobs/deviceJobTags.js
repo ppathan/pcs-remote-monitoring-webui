@@ -8,7 +8,6 @@ import {
   SectionHeader
 } from '../../../../shared';
 
-
 export const DeviceJobTags = (props) => {
   const { t, devices } = props;
   return (
