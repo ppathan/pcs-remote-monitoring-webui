@@ -36,6 +36,7 @@ let conditionKey = 0;
 
 // Creates a state object for a condition
 const newCondition = () => ({
+  field: "",
   calculation: "",
   duration: "00:00:00",
   operator: Config.OPERATOR_OPTIONS[0].value,
