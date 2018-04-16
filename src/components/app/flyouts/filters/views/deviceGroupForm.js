@@ -91,6 +91,22 @@ class DeviceGroupForm extends LinkedComponent {
   apply = (event) => {
     event.preventDefault();
     // TODO: calling new device group API
+    const {
+      editDeviceGroup,
+      insertDeviceGroup,
+      upsertDeviceGroup,
+      deleteDeviceGroup
+    } = this.props;
+
+    const deviceGroup = {
+      displayName: this.state.name,
+      conditions: this.state.conditions.map(({ field, operator, value }) => ({
+        key: field,
+        operator,
+        value
+      }))
+    }
+    insertDeviceGroup(deviceGroup);
   };
 
   addCondition = () => this.conditions.set([...this.conditions.value, newCondition()]);
@@ -99,7 +115,11 @@ class DeviceGroupForm extends LinkedComponent {
     () => this.conditions.set(this.conditions.value.filter((_, idx) => index !== idx));
 
   render () {
-    const { t, editDeviceGroup } = this.props;
+    const {
+      t,
+      editDeviceGroup,
+      deleteDeviceGroup
+    } = this.props;
 
     // Create the state link for the dynamic form elements
     const conditionLinks = this.conditions.getLinkedChildren(conditionLink => {
@@ -165,6 +185,25 @@ class DeviceGroupForm extends LinkedComponent {
       }
     ];
 
+    const fieldOptions = [
+      {
+        value: 'tags.IsSimulated',
+        label: 'tags.IsSimulated'
+      },
+      {
+        value: "tags.BAR",
+        label: "tags.BAR"
+      },
+      {
+        value: "tags.Foo",
+        label: "tags.Foo"
+      },
+      {
+        value: "tags.test",
+        label: "tags.test"
+      }
+    ];
+
     return (
       <form onSubmit={this.apply} className='new-filter-form-container'>
         <Section.Container collapsable={false}>
@@ -210,6 +249,8 @@ class DeviceGroupForm extends LinkedComponent {
                         type="select"
                         className="long"
                         clearable={false}
+                        simpleValue
+                        options={fieldOptions}
                         placeholder={t('deviceGroupsFlyout.conditions.field')}
                         link={condition.field} />
                     </FormGroup>
@@ -221,6 +262,7 @@ class DeviceGroupForm extends LinkedComponent {
                         type="select"
                         className="long"
                         clearable={false}
+                        simpleValue
                         options={operatorOptions}
                         placeholder={t('deviceGroupsFlyout.conditions.operatorPlaceholder')}
                         link={condition.operator} />
@@ -242,6 +284,7 @@ class DeviceGroupForm extends LinkedComponent {
                         type="select"
                         className="short"
                         clearable={false}
+                        simpleValue
                         options={typeOptions}
                         placeholder={t('deviceGroupsFlyout.conditions.typePlaceholder')}
                         link={condition.type} />

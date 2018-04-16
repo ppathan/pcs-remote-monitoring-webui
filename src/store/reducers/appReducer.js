@@ -47,6 +47,17 @@ export const epics = createEpicScenario({
         .catch(handleError(fromAction))
   },
 
+  /**Create a device groups */
+  insertDeviceGroup: {
+    type: 'APP_DEVICE_GROUPS_INSERT',
+    epic: fromAction =>{
+      console.log('createDeviceGroup ', fromAction)
+      return ConfigService.createDeviceGroup(fromAction.payload)
+      .do(res=>console.log('createDeviceGroup result =>', res))
+        .map(toActionCreator(redux.actions.insertDeviceGroup, fromAction))
+        .catch(handleError(fromAction))}
+  },
+
   /** Get the account's device group filters */
   fetchDeviceGroupFilters: {
     type: 'APP_DEVICE_GROUP_FILTERS_FETCH',
@@ -127,7 +138,6 @@ const initialState = {
 };
 
 const updateDeviceGroupsReducer = (state, { payload, fromAction }) => {
-console.log('group payload in update', payload)
   const { entities: { deviceGroups } } = normalize(payload, deviceGroupListSchema);
   return update(state, {
     deviceGroups: { $set: deviceGroups },
@@ -137,16 +147,13 @@ console.log('group payload in update', payload)
 
 const deleteDeviceGroupReducer = (state, { payload }) => {
   return update(state, {
-    deviceGroups: { $unset: [payload] }
+    deviceGroups: { $unset: payload }
   });
 };
 
-const insertDeviceGroupReducer = (state, { payload }) => {
-  const { entities: { deviceGroups } } = normalize(payload, deviceGroupListSchema);
-  return update(state, {
-    deviceGroups: { ...state.deviceGroup, ...deviceGroups },
-  });
-};
+const insertDeviceGroupReducer = (state, { payload }) => update(state, {
+  deviceGroups: { [payload.id]: { $set: payload } }
+});
 
 const upsertDeviceGroupReducer = (state, { payload }) => {
   const { entities: { deviceGroups } } = normalize(payload, deviceGroupListSchema);
@@ -156,8 +163,6 @@ const upsertDeviceGroupReducer = (state, { payload }) => {
 };
 
 const updateDeviceGroupFiltersReducer = (state, { payload, fromAction }) => {
-  //const { entities: { deviceGroups } } = normalize(payload, deviceGroupListSchema);
-  console.log('payload in update', payload)
   return update(state, {
     deviceGroupFilters: { $set: payload },
     ...setPending(fromAction.type, false)

@@ -4,6 +4,7 @@ import Config from 'app.config';
 import { HttpClient } from './httpClient';
 import {
   toDeviceGroupsModel,
+  toDeviceGroupsRequestModel,
   toDeviceGroupFiltersModel,
   prepareLogoResponse,
   toSolutionSettingThemeModel
@@ -20,31 +21,29 @@ export class ConfigService {
       .map(toDeviceGroupsModel);
   }
 
+  /** Creates a device group filter */
+  static createDeviceGroup(payload) {
+    return HttpClient.post(
+      `${ENDPOINT}devicegroups`,
+      toDeviceGroupsRequestModel(payload)
+    );
+  }
+
+  /** Modify a device group filter by id */
+  static modifyDeviceGroup(id, payload) {
+    return HttpClient.put(`${ENDPOINT}devicegroups/${id}`, payload);
+  }
+
+  /** Delete a device group filter by id */
+  static deleteDeviceGroup(id) {
+    return HttpClient.delete(`${ENDPOINT}devicegroups/${id}`);
+  }
+
   /** Returns a the account's device group filters */
   static getDeviceGroupFilters() {
     return HttpClient.get(`${ENDPOINT}devicegroupfilters`)
       // .do(res => console.log('$%#',res)
       //.map(toDeviceGroupFiltersModel);
-  }
-
-  /** Creates a device group filter */
-  static createtDeviceGroupFilter(payload) {
-    return HttpClient.post(`${ENDPOINT}devicegroupfilters`, payload);
-  }
-
-  /** Modify a device group filter by id */
-  static modifyDeviceGroupFilter(id, payload) {
-    return HttpClient.put(`${ENDPOINT}devicegroupfilters/${id}`, payload);
-  }
-
-  /** Delete a device group filter by id */
-  static deleteDeviceGroupFilter(id) {
-    return HttpClient.delete(`${ENDPOINT}devicegroupfilters/${id}`);
-  }
-
-  /** Returns a the account's device group filters */
-  static createtDeviceGroupFilter(payload) {
-    return HttpClient.post(`${ENDPOINT}devicegroupfilters`, payload);
   }
 
   /** Returns the azure map key for the account */

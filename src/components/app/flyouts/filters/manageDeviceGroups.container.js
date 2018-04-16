@@ -16,9 +16,9 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  createDeviceGroup: (payload) => dispatch(appEpics.actions.insertDeviceGroup(payload)),
+  insertDeviceGroup: (payload) => dispatch(appEpics.actions.insertDeviceGroup(payload)),
   deleteDeviceGroup: id => dispatch(appEpics.actions.deleteDeviceGroup(id)),
-  editDeviceGroup: (id, payload) => dispatch(appEpics.actions.upsertDeviceGroup(id, payload)),
+  upsertDeviceGroup: (id, payload) => dispatch(appEpics.actions.upsertDeviceGroup(id, payload)),
   // TODO: get /config/v1/devicegroupfilters
   // getDeviceGroupFilters:
 });
