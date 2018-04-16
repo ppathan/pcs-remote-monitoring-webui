@@ -6,37 +6,26 @@ import moment from 'moment';
 
 import Config from 'app.config';
 import { TelemetryService } from 'services';
-import { compareByProperty } from 'utilities';
+import { compareByProperty, getIntervalParams } from 'utilities';
 import { Grid, Cell } from './grid';
 import { PanelErrorBoundary } from './panel';
+import { DeviceGroupDropdownContainer as DeviceGroupDropdown } from 'components/app/deviceGroupDropdown';
+import { TimeIntervalDropdown } from 'components/app/timeIntervalDropdown';
 import {
   OverviewPanel,
   AlarmsPanel,
   TelemetryPanel,
   KpisPanel,
   MapPanel,
-  transformTelemetryResponse
+  transformTelemetryResponse,
+  chartColorObjects
 } from './panels';
 import { ContextMenu, PageContent, RefreshBar } from 'components/shared';
 
 import './dashboard.css';
 
-const chartColors = [
-  '#01B8AA',
-  '#F2C80F',
-  '#E81123',
-  '#3599B8',
-  '#33669A',
-  '#26FFDE',
-  '#E0E7EE',
-  '#FDA954',
-  '#FD625E',
-  '#FF4EC2',
-  '#FFEE91'
-];
-
 const initialState = {
-  chartColors,
+  timeInterval: 'PT1H',
 
   // Telemetry data
   telemetry: {},
@@ -61,6 +50,8 @@ const initialState = {
   lastRefreshed: undefined
 };
 
+const refreshEvent = (deviceIds = [], timeInterval) => ({ deviceIds, timeInterval });
+
 export class Dashboard extends Component {
 
   constructor(props) {
@@ -81,38 +72,39 @@ export class Dashboard extends Component {
     // Telemetry stream - START
     const onPendingStart = () => this.setState({ telemetryIsPending: true });
 
-    const telemetry$ = TelemetryService.getTelemetryByDeviceIdP15M()
+    const getTelemetryStream = ({ deviceIds = [] }) => TelemetryService.getTelemetryByDeviceIdP15M(deviceIds)
       .merge(
         this.telemetryRefresh$ // Previous request complete
           .delay(Config.telemetryRefreshInterval) // Wait to refresh
           .do(onPendingStart)
-          .flatMap(_ => TelemetryService.getTelemetryByDeviceIdP1M())
+          .flatMap(_ => TelemetryService.getTelemetryByDeviceIdP1M(deviceIds))
       )
       .flatMap(transformTelemetryResponse(() => this.state.telemetry))
       .map(telemetry => ({ telemetry, telemetryIsPending: false })); // Stream emits new state
       // Telemetry stream - END
 
       // KPI stream - START
-      const currentFrom = 'NOW-PT1H';
-      const previousFrom = 'NOW-PT2H';
-
-      const currentParams = { from: currentFrom, to: 'NOW' };
-      const previousParams = { from: previousFrom, to: currentFrom };
 
       // TODO: Add device ids to params - START
-      const kpis$ = this.panelsRefresh$
+      const getKpiStream = ({ deviceIds = [], timeInterval }) => this.panelsRefresh$
         .delay(Config.dashboardRefreshInterval)
         .startWith(0)
         .do(_ => this.setState({ kpisIsPending: true }))
-        .flatMap(_ =>
-          Observable.forkJoin(
+        .flatMap(_ => {
+          const devices = deviceIds.length ? deviceIds.join(',') : undefined;
+          const [ currentIntervalParams, previousIntervalParams ] = getIntervalParams(timeInterval);
+
+          const currentParams = { ...currentIntervalParams, devices };
+          const previousParams = { ...previousIntervalParams, devices };
+
+          return Observable.forkJoin(
             TelemetryService.getActiveAlarms(currentParams),
             TelemetryService.getActiveAlarms(previousParams),
 
             TelemetryService.getAlarms(currentParams),
             TelemetryService.getAlarms(previousParams)
           )
-        ).map(([
+        }).map(([
           currentActiveAlarms,
           previousActiveAlarms,
 
@@ -207,7 +199,7 @@ export class Dashboard extends Component {
 
       this.subscriptions.push(
         this.dashboardRefresh$
-          .switchMap(() => telemetry$)
+          .switchMap(getTelemetryStream)
           .subscribe(
             telemetryState => this.setState(
               { ...telemetryState, lastRefreshed: moment() },
@@ -219,7 +211,7 @@ export class Dashboard extends Component {
 
       this.subscriptions.push(
         this.dashboardRefresh$
-          .switchMap(() => kpis$)
+          .switchMap(getKpiStream)
           .subscribe(
             kpiState => this.setState(
               { ...kpiState, lastRefreshed: moment() },
@@ -230,14 +222,47 @@ export class Dashboard extends Component {
       );
 
       // Start polling all panels
-      this.dashboardRefresh$.next('r');
+      if (this.props.deviceLastUpdated) {
+        this.dashboardRefresh$.next(
+          refreshEvent(
+            Object.keys(this.props.devices || {}),
+            this.state.timeInterval
+          )
+        );
+      }
   }
 
   componentWillUnmount() {
     this.subscriptions.forEach(sub => sub.unsubscribe());
   }
 
-  refreshDashboard = () => this.dashboardRefresh$.next('r');
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.deviceLastUpdated !== this.props.deviceLastUpdated) {
+      this.dashboardRefresh$.next(
+        refreshEvent(
+          Object.keys(nextProps.devices),
+          this.state.timeInterval
+        ),
+      );
+    }
+  }
+
+  refreshDashboard = () => this.dashboardRefresh$.next(
+    refreshEvent(
+      Object.keys(this.props.devices),
+      this.state.timeInterval
+    )
+  );
+
+  onTimeIntervalChange = (timeInterval) => this.setState(
+    { timeInterval },
+    () => this.dashboardRefresh$.next(
+      refreshEvent(
+        Object.keys(this.props.devices),
+        timeInterval
+      )
+    )
+  );
 
   render () {
     const {
@@ -255,7 +280,7 @@ export class Dashboard extends Component {
       t
     } = this.props;
     const {
-      chartColors,
+      timeInterval,
 
       telemetry,
       telemetryIsPending,
@@ -310,10 +335,15 @@ export class Dashboard extends Component {
 
     return [
       <ContextMenu key="context-menu">
+        <DeviceGroupDropdown />
         <RefreshBar
           refresh={this.refreshDashboard}
           time={lastRefreshed}
           isPending={kpisIsPending || devicesIsPending}
+          t={t} />
+        <TimeIntervalDropdown
+          onChange={this.onTimeIntervalChange}
+          value={timeInterval}
           t={t} />
       </ContextMenu>,
       <PageContent className="dashboard-container" key="page-content">
@@ -352,7 +382,7 @@ export class Dashboard extends Component {
               telemetry={telemetry}
               isPending={telemetryIsPending}
               error={telemetryError}
-              colors={chartColors}
+              colors={chartColorObjects}
               t={t} />
           </Cell>
           <Cell className="col-4">
@@ -362,7 +392,7 @@ export class Dashboard extends Component {
               criticalAlarmsChange={criticalAlarmsChange}
               isPending={kpisIsPending || rulesIsPending || devicesIsPending}
               error={devicesError || rulesError || kpisError}
-              colors={chartColors}
+              colors={chartColorObjects}
               t={t} />
           </Cell>
         </Grid>

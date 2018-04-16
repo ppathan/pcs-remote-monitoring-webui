@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react';
 import { RulesGrid } from './rulesGrid';
+import { DeviceGroupDropdownContainer as DeviceGroupDropdown } from 'components/app/deviceGroupDropdown';
 import { Btn, RefreshBar, PageContent, ContextMenu } from 'components/shared';
 import { RuleDetails, RuleEditor } from './flyouts';
 import { svgs } from 'utilities';
@@ -76,6 +77,7 @@ export class Rules extends Component {
     };
     return [
       <ContextMenu key="context-menu">
+        <DeviceGroupDropdown />
         {this.state.contextBtns}
         <Btn svg={svgs.plus} onClick={this.openNewRuleFlyout}>New rule</Btn>
       </ContextMenu>,

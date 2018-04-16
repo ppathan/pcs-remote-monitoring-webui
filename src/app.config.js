@@ -13,7 +13,7 @@ const Config = {
     gitHubReleases: 'https://api.github.com/repos/Azure/azure-iot-pcs-remote-monitoring-dotnet/releases'
   },
   // Constants
-  defaultAjaxTimeout: 10000, // 10s
+  defaultAjaxTimeout: 20000, // 20s
   maxRetryAttempts: 2,
   retryWaitTime: 2000, // On retryable error, retry after 2s
   retryableStatusCodes: new Set([ 0, 502, 503 ]),
@@ -24,11 +24,6 @@ const Config = {
   telemetryRefreshInterval: 1000, // 1 seconds
   simulationId: '1',
   validExtensions: validExtensions.join(),
-  isValidExtension: (file) => {
-    if (!file) return false;
-    const fileExt = file.name.split('.').pop();
-    return validExtensions.indexOf('.' + fileExt) > -1;
-  },
   emptyValue: '--',
   maxTopAlarms: 5,
 };
