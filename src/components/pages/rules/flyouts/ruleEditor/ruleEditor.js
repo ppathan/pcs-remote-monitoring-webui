@@ -59,10 +59,10 @@ export class RuleEditor extends LinkedComponent {
   constructor(props) {
     super(props);
 
-    const { t, deviceGroups, rule } = props;
+    const { t, deviceGroups = [], rule } = props;
     this.state = rule ? { ...rule } : { ...newRule };
 
-    deviceGroupOptions = [...(deviceGroups || []).map(this.toSelectOption)];
+    deviceGroupOptions = deviceGroups.map(this.toSelectOption);
 
     calculationOptions = [
       { value: calculations[0], label: t(`${tPath}calculationAverage`) },
@@ -107,34 +107,22 @@ export class RuleEditor extends LinkedComponent {
                 devicesAffected: groupDevices.length
               });
             },
-            errorResponse => {
-              this.setState({ error: errorResponse.errorMessage });
-            }
+            error => this.setState({ error })
           );
       }
     });
   }
 
   getConditionFields(devices) {
-    const fields = [];
-    devices.forEach(device => {
-      const telemetry = device.telemetry;
-      if (telemetry) {
-        Object.values(telemetry).forEach(field => {
-          const extract = field.messageSchema.fields;
-          Object.keys(extract).forEach(field => {
-            if (field.indexOf('_unit') !== -1) return; //we don't want keys that contain _
-            if (fields.every(o => o.value !== field)) {
-              fields.push({
-                label: field,
-                value: field
-              });
-            }
-          });
-        });
-      }
-    });
-    return fields;
+    const conditions = new Set(); // Using a set to avoid searching the array multiple times in the every
+    devices.forEach(({ telemetry = {} }) => {
+      Object.values(telemetry).forEach(({ messageSchema: { fields } }) => {
+        Object.keys(fields).forEach((field) => {
+          if (field.indexOf('_unit') === -1) conditions.add(field);
+        })
+      })
+    })
+    return [...conditions.values()].map(field => ({ label: field, value: field }));
   }
 
   onSeverityChange = (proxy) => {
