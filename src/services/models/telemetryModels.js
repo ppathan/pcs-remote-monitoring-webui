@@ -63,3 +63,33 @@ export const toMessagesModel = (response = {}) => (response.items || [])
     'deviceId': 'deviceId',
     'time': 'time'
   }));
+
+  export const toNewRuleRequestModel = ({
+    name,
+    description,
+    groupId,
+    conditions,
+    severity,
+    enabled
+  }) => {
+    const Conditions = [];
+    conditions.map((condition) =>{
+      let modelCondition = {
+        Field: condition.field,
+        Operator: condition.operator,
+        Calculation: condition.calculation,
+        Duration: condition.duration,
+        Value: condition.value,
+      }
+      Conditions.push(modelCondition);
+      return condition;
+    });
+    return {
+      Name: name,
+      Description: description,
+      GroupId: groupId,
+      Severity: severity,
+      Enabled: enabled,
+      Conditions: Conditions
+    };
+  }

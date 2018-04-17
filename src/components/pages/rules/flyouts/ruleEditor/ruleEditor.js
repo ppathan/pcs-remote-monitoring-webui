@@ -19,7 +19,7 @@ import {
 import Flyout from 'components/shared/flyout';
 import './ruleEditor.css';
 import { IoTHubManagerService, TelemetryService } from 'services';
-import { toRulesModel } from 'services/models';
+import { toNewRuleRequestModel } from 'services/models';
 
 const Section = Flyout.Section;
 const ruleNameValidator = (new Validator()).check(Validator.notEmpty, 'Name is required');
@@ -81,7 +81,9 @@ export class RuleEditor extends LinkedComponent {
     this.formDataLink = this.linkTo('formData');
     this.ruleNameLink = this.formDataLink.forkTo('name').withValidator(ruleNameValidator);
     this.descriptionLink = this.formDataLink.forkTo('description');
-    this.deviceGroupLink = this.formDataLink.forkTo('groupId').withValidator(deviceGroupValidator);
+    this.deviceGroupLink = this.formDataLink.forkTo('groupId')
+      .map(({ value }) => value)
+      .withValidator(deviceGroupValidator);
     this.conditionsLink = this.formDataLink.forkTo('conditions');
   }
 
@@ -107,14 +109,14 @@ export class RuleEditor extends LinkedComponent {
   //TODO: still working on it as of 16/04/18
   apply = (event) => {
     event.preventDefault();
+    const { formData } = this.state;
     console.log('TODO: Handle the form submission');
     if (this.formIsValid()) {
       this.setState({ isPending: true });
-      this.subscription = TelemetryService.createRule(toRulesModel(this.state.formData))
+      this.subscription = TelemetryService.createRule(toNewRuleRequestModel(formData))
         .subscribe(
-          provisionedRule => {
-            this.setState({ provisionedRule, isPending: false });
-            this.props.insertRule(provisionedRule);
+          () => {
+            this.setState({ isPending: false });
           },
           error => this.setState({ error, isPending: false })
         );
@@ -166,8 +168,8 @@ export class RuleEditor extends LinkedComponent {
     const { onClose, t } = this.props;
     // Create the state link for the dynamic form elements
     const conditionLinks = this.conditionsLink.getLinkedChildren(conditionLink => {
-      const fieldLink = conditionLink.forkTo('field');
-      const calculationLink = conditionLink.forkTo('calculation');
+      const fieldLink = conditionLink.forkTo('field').map(({ value }) => value);
+      const calculationLink = conditionLink.forkTo('calculation').map(({ value }) => value);
       const operatorLink = conditionLink.forkTo('operator');
       const valueLink = conditionLink.forkTo('value');
       const durationLink = conditionLink.forkTo('duration');
