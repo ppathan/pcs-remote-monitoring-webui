@@ -77,7 +77,7 @@ export class RuleEditor extends LinkedComponent {
     if (this.subscription) this.subscription.unsubscribe();
   }
 
-  toSelectOption = ({ id, displayName }) => ({ value: id, label: displayName });
+  toSelectOption = ({ id, displayName }) => ({ label: displayName, value: id });
 
   addCondition = () => this.conditionsLink.set([...this.conditionsLink.value, newCondition()]);
 
