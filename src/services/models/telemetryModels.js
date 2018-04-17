@@ -17,8 +17,8 @@ export const toRulesModel = (response = {}) => (response.items || [])
     'action.type': 'type'
   }));
 
-  // TODO: Double check the response from alarmsByRule and alarms, might only need one model
-  export const toAlarmsModel = (response = {}) => (response.items || [])
+// TODO: Double check the response from alarmsByRule and alarms, might only need one model
+export const toAlarmsModel = (response = {}) => (response.items || [])
   .map((alarm = {}) => reshape(alarm, {
     'rule.id': 'ruleId',
     'created': 'created',
@@ -64,32 +64,27 @@ export const toMessagesModel = (response = {}) => (response.items || [])
     'time': 'time'
   }));
 
-  export const toNewRuleRequestModel = ({
-    name,
-    description,
-    groupId,
-    conditions,
-    severity,
-    enabled
-  }) => {
-    const Conditions = [];
-    conditions.map((condition) =>{
-      let modelCondition = {
-        Field: condition.field,
-        Operator: condition.operator,
-        Calculation: condition.calculation,
-        Duration: condition.duration,
-        Value: condition.value,
-      }
-      Conditions.push(modelCondition);
-      return condition;
-    });
-    return {
-      Name: name,
-      Description: description,
-      GroupId: groupId,
-      Severity: severity,
-      Enabled: enabled,
-      Conditions: Conditions
-    };
-  }
+export const toNewRuleRequestModel = ({
+  name,
+  description,
+  groupId,
+  conditions,
+  severity,
+  enabled
+}) => {
+  const Conditions = conditions.map(condition => ({
+    Field: condition.field,
+    Operator: condition.operator,
+    Calculation: condition.calculation,
+    Duration: condition.duration,
+    Value: condition.value
+  }));
+  return {
+    Name: name,
+    Description: description,
+    GroupId: groupId,
+    Severity: severity,
+    Enabled: enabled,
+    Conditions
+  };
+}

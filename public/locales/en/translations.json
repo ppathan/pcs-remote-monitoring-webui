@@ -256,8 +256,14 @@
           "value": "Value",
           "valuePlaceholder": "Enter value"
         },
-        "calculationAverage": "Average",
-        "calculationInstant": "Instant",
+        "calculation": {
+          "average": "Average",
+          "instant": "Instant"
+        },
+        "validation": {
+          "required": "Is required",
+          "greaterThanZero": "Must be greater than zero"
+        },
         "severityLevel": "Severity level",
         "ruleStatus": "Rule status",
         "ruleEnabled": "Enabled",

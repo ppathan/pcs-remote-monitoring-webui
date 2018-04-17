@@ -37,7 +37,7 @@
     position: relative;
     @include rem-fallback(width, 288px);
     @include rem-fallback(left, 180px);
-    @include rem-fallback(top, 42px);
+    @include rem-fallback(top, 24px);
   }
 
   .padded-top {

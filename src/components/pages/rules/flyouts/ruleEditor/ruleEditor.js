@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft. All rights reserved.
 
 import React from 'react';
+
 import {
   Btn,
   BtnToolbar,
@@ -17,23 +18,21 @@ import {
   LinkedComponent
 } from 'utilities';
 import Flyout from 'components/shared/flyout';
-import './ruleEditor.css';
 import { IoTHubManagerService, TelemetryService } from 'services';
 import { toNewRuleRequestModel } from 'services/models';
 
+import './ruleEditor.css';
+
 const Section = Flyout.Section;
-const ruleNameValidator = (new Validator()).check(Validator.notEmpty, 'Name is required');
-const deviceGroupValidator = (new Validator()).check(Validator.notEmpty, 'Device group is required');
 const severityLevels = ['critical', 'warning', 'info'];
 const calculations = ['average', 'instant'];
 var deviceGroupOptions = [];
-var calculationOptions = [];
 var operatorOptions = [
-  { value: 'GreaterThan', label: '>' },
-  { value: 'GreaterThanOrEqual', label: '>=' },
-  { value: 'LessThan', label: '<' },
-  { value: 'LessThanOrEqual', label: '<=' },
-  { value: 'Equals', label: '=' }
+  { label: '>', value: 'GreaterThan' },
+  { label: '>=', value: 'GreaterThanOrEqual' },
+  { label: '<', value: 'LessThan' },
+  { label: '<=', value: 'LessThanOrEqual' },
+  { label: '=', value: 'Equals' }
 ];
 // A counter for creating unique keys per new condition
 let conditionKey = 0;
@@ -62,7 +61,7 @@ export class RuleEditor extends LinkedComponent {
 
   constructor(props) {
     super(props);
-    const { t, deviceGroups = [], rule } = props;
+    const { deviceGroups = [], rule } = props;
     const formData = rule ? rule : newRule;
     this.state = {
       isPending: false,
@@ -72,19 +71,6 @@ export class RuleEditor extends LinkedComponent {
       formData
     };
     deviceGroupOptions = deviceGroups.map(this.toSelectOption);
-    calculationOptions = [
-      { value: calculations[0], label: t('rules.flyouts.ruleEditor.calculationAverage') },
-      { value: calculations[1], label: t('rules.flyouts.ruleEditor.calculationInstant') }
-    ];
-
-    // State links
-    this.formDataLink = this.linkTo('formData');
-    this.ruleNameLink = this.formDataLink.forkTo('name').withValidator(ruleNameValidator);
-    this.descriptionLink = this.formDataLink.forkTo('description');
-    this.deviceGroupLink = this.formDataLink.forkTo('groupId')
-      .map(({ value }) => value)
-      .withValidator(deviceGroupValidator);
-    this.conditionsLink = this.formDataLink.forkTo('conditions');
   }
 
   componentWillUnmount() {
@@ -106,7 +92,7 @@ export class RuleEditor extends LinkedComponent {
     ].every(link => !link.error);
   }
 
-  //TODO: still working on it as of 16/04/18
+  //TODO: still working on it as of 17/04/18
   apply = (event) => {
     event.preventDefault();
     const { formData } = this.state;
@@ -117,14 +103,15 @@ export class RuleEditor extends LinkedComponent {
         .subscribe(
           () => {
             this.setState({ isPending: false });
+            this.props.onClose();
           },
           error => this.setState({ error, isPending: false })
         );
     }
   }
 
-  onGroupIdChange = (selectedItem) => {
-    this.getDeviceCountAndFields(selectedItem.target.value.value);
+  onGroupIdChange = ({ target: { value: { value = {} } } }) => {
+    this.getDeviceCountAndFields(value);
   }
 
   getDeviceCountAndFields(groupId) {
@@ -158,20 +145,36 @@ export class RuleEditor extends LinkedComponent {
     return [...conditions.values()].map(field => ({ label: field, value: field }));
   }
 
-  onSeverityChange = (event) => {
-    this.setState({
-      severity: event.target.value
-    });
+  //todo toggle button didn't support link
+  onToggle = (event) => {
+    this.setState({ formdata: { enabled: !true } })
   }
 
   render() {
     const { onClose, t } = this.props;
+    const calculationOptions = calculations.map(value => ({
+      label: t(`rules.flyouts.ruleEditor.calculation.${value}`),
+      value
+    }));
+    // Validators
+    const requiredValidator = (new Validator()).check(Validator.notEmpty, () => this.props.t('rules.flyouts.ruleEditor.validation.required'));
+    // State links
+    this.formDataLink = this.linkTo('formData');
+    this.ruleNameLink = this.formDataLink.forkTo('name').withValidator(requiredValidator);
+    this.descriptionLink = this.formDataLink.forkTo('description');
+    this.deviceGroupLink = this.formDataLink.forkTo('groupId')
+      .map(({ value }) => value)
+      .withValidator(requiredValidator);
+    this.conditionsLink = this.formDataLink.forkTo('conditions');
+    this.severityLink = this.formDataLink.forkTo('severity');
+    //todo toggle button didn't support link
+    this.enabledLink = this.formDataLink.forkTo('enabled');
     // Create the state link for the dynamic form elements
     const conditionLinks = this.conditionsLink.getLinkedChildren(conditionLink => {
-      const fieldLink = conditionLink.forkTo('field').map(({ value }) => value);
-      const calculationLink = conditionLink.forkTo('calculation').map(({ value }) => value);
-      const operatorLink = conditionLink.forkTo('operator');
-      const valueLink = conditionLink.forkTo('value');
+      const fieldLink = conditionLink.forkTo('field').map(({ value }) => value).withValidator(requiredValidator);;
+      const calculationLink = conditionLink.forkTo('calculation').map(({ value }) => value).withValidator(requiredValidator);;
+      const operatorLink = conditionLink.forkTo('operator').withValidator(requiredValidator);;
+      const valueLink = conditionLink.forkTo('value').withValidator(requiredValidator);;
       const durationLink = conditionLink.forkTo('duration');
       return { fieldLink, calculationLink, operatorLink, valueLink, durationLink };
     });
@@ -250,7 +253,8 @@ export class RuleEditor extends LinkedComponent {
                         clearable={false}
                         searchable={false} />
                     </FormGroup>
-                    {this.state.formData.conditions[idx].calculation.value === calculations[0] &&
+                    {
+                      condition.calculationLink.value === calculations[0] &&
                       <FormGroup>
                         <FormLabel isRequired='true'>{t('rules.flyouts.ruleEditor.condition.timePeriod')}</FormLabel>
                         <FormControl
@@ -289,29 +293,28 @@ export class RuleEditor extends LinkedComponent {
                 <FormGroup className='padded-top'>
                   <FormLabel>{t('rules.flyouts.ruleEditor.severityLevel')}</FormLabel>
                   <Radio
-                    onChange={this.onSeverityChange}
-                    value={severityLevels[0]}
-                    checked={this.state.formData.severity === severityLevels[0]}>
-                    <SeverityRenderer value={severityLevels[0]} context={{ t }} iconOnly={false} />
+                    link={this.severityLink}
+                    value={severityLevels[0]}>
+                    <SeverityRenderer value={severityLevels[0]} context={{ t }} />
                   </Radio>
                   <Radio
-                    onChange={this.onSeverityChange}
-                    value={severityLevels[1]}
-                    checked={this.state.formData.severity === severityLevels[1]} >
-                    <SeverityRenderer value={severityLevels[1]} context={{ t }} iconOnly={false} />
+                    link={this.severityLink}
+                    value={severityLevels[1]}>
+                    <SeverityRenderer value={severityLevels[1]} context={{ t }} />
                   </Radio>
                   <Radio
-                    onChange={this.onSeverityChange}
-                    value={severityLevels[2]}
-                    checked={this.state.formData.severity === severityLevels[2]} >
-                    <SeverityRenderer value={severityLevels[2]} context={{ t }} iconOnly={false} />
+                    link={this.severityLink}
+                    value={severityLevels[2]}>
+                    <SeverityRenderer value={severityLevels[2]} context={{ t }} />
                   </Radio>
                 </FormGroup>
               </Section.Content>
               <Section.Content>
                 <FormGroup>
                   <FormLabel>{t('rules.flyouts.ruleEditor.ruleStatus')}</FormLabel>
-                  <ToggleBtn value={this.state.formData.enabled}>{this.state.formData.enabled ? t('rules.flyouts.ruleEditor.ruleEnabled') : t('rules.flyouts.ruleEditor.ruleDisabled')}</ToggleBtn>
+                  <ToggleBtn value={this.state.formData.enabled}>
+                    {this.state.formData.enabled ? t('rules.flyouts.ruleEditor.ruleEnabled') : t('rules.flyouts.ruleEditor.ruleDisabled')}
+                  </ToggleBtn>
                 </FormGroup>
               </Section.Content>
             </Section.Container>

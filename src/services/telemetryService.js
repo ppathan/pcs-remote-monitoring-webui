@@ -23,13 +23,13 @@ export class TelemetryService {
   }
 
   /** creates a new rule */
-  static createRule(rule = {}) {
+  static createRule(rule) {
     return HttpClient.post(`${ENDPOINT}rules`, rule)
       .map(toRulesModel);
   }
 
   /** updates an existing rule */
-  static updateRule(rule = {}) {
+  static updateRule(rule) {
     return HttpClient.put(`${ENDPOINT}rules`, rule)
       .map(toRulesModel);
   }
